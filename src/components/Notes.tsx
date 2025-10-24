@@ -147,14 +147,14 @@ export default function Notes() {
       </div>
 
       {showForm && (
-        <div className="bg-white dark:bg-gray-700 rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-gray-600">
+        <div className="bg-white dark:bg-gray-600 rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-gray-500">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">
               {editingNote ? 'Edit Note' : 'New Note'}
             </h2>
             <button
               onClick={handleCancel}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-500 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -167,7 +167,7 @@ export default function Notes() {
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter note title..."
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 required
               />
             </div>
@@ -178,7 +178,7 @@ export default function Notes() {
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Write your note here..."
                 rows={6}
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-500 bg-white dark:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-400 bg-white dark:bg-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
             <div className="flex gap-3">
@@ -192,7 +192,7 @@ export default function Notes() {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-6 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                className="px-6 py-2 bg-gray-200 dark:bg-gray-500 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-400 transition-colors"
               >
                 Cancel
               </button>
@@ -202,7 +202,7 @@ export default function Notes() {
       )}
 
       {notes.length === 0 ? (
-        <div className="text-center py-16 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+        <div className="text-center py-16 bg-gray-50 dark:bg-gray-600/50 rounded-xl">
           <FileText className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h3 className="text-xl font-semibold mb-2">No notes yet</h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
@@ -221,7 +221,7 @@ export default function Notes() {
           {notes.map((note) => (
             <div
               key={note.id}
-              className="bg-white dark:bg-gray-700 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-600 p-5"
+              className="bg-white dark:bg-gray-600 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-200 dark:border-gray-500 p-5"
             >
               <div className="flex items-start justify-between mb-3">
                 <h3 className="text-lg font-semibold line-clamp-1 flex-1 mr-2">
@@ -230,14 +230,14 @@ export default function Notes() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(note)}
-                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-500 rounded-lg transition-colors"
                     title="Edit"
                   >
                     <Edit2 className="w-4 h-4 text-blue-500" />
                   </button>
                   <button
                     onClick={() => handleDelete(note.id)}
-                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-500 rounded-lg transition-colors"
                     title="Delete"
                   >
                     <Trash2 className="w-4 h-4 text-red-500" />
