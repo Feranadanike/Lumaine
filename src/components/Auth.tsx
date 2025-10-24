@@ -8,6 +8,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [error, setError] = useState('');
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -20,11 +21,18 @@ export default function Auth() {
         if (password !== confirmPassword) {
           throw new Error('Passwords do not match');
         }
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
         });
         if (error) throw error;
+
+        if (data.user) {
+          await supabase.from('user_profiles').insert({
+            id: data.user.id,
+            display_name: username || email.split('@')[0],
+          });
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -58,6 +66,22 @@ export default function Auth() {
           </h2>
 
           <form onSubmit={handleAuth} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-slate-700 mb-2">
+                  Username <span className="text-slate-500 text-xs">(optional)</span>
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-rose-400 focus:border-transparent transition-all"
+                  placeholder="Your display name"
+                />
+              </div>
+            )}
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
                 Email
@@ -128,6 +152,7 @@ export default function Auth() {
                 setIsSignUp(!isSignUp);
                 setError('');
                 setConfirmPassword('');
+                setUsername('');
               }}
               className="text-sm text-rose-500 hover:text-rose-600 font-medium"
             >

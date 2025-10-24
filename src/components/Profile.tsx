@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2 } from 'lucide-react';
+import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2, Edit2, Check, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -42,6 +42,8 @@ export default function Profile() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -82,6 +84,7 @@ export default function Profile() {
         setProfile(newProfile);
       } else {
         setProfile(profileData);
+        setNewUsername(profileData.display_name || '');
       }
 
       const { data: allAchievements } = await supabase
@@ -227,6 +230,28 @@ export default function Profile() {
     }
   };
 
+  const handleUpdateUsername = async () => {
+    if (!newUsername.trim()) {
+      alert('Username cannot be empty');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ display_name: newUsername.trim() })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      setProfile(prev => prev ? { ...prev, display_name: newUsername.trim() } : null);
+      setEditingUsername(false);
+    } catch (error) {
+      console.error('Error updating username:', error);
+      alert('Failed to update username');
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
       alert('Please type DELETE to confirm');
@@ -323,8 +348,44 @@ export default function Profile() {
             <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <User className="h-10 w-10" />
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">{profile.display_name || 'Lumaine User'}</h2>
+            <div className="flex-1">
+              {editingUsername ? (
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="px-3 py-2 rounded-lg text-slate-900 font-bold text-xl flex-1"
+                    placeholder="Your username"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleUpdateUsername}
+                    className="p-2 bg-green-500 hover:bg-green-600 rounded-lg transition-colors"
+                  >
+                    <Check className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingUsername(false);
+                      setNewUsername(profile.display_name || '');
+                    }}
+                    className="p-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mb-2">
+                  <h2 className="text-2xl font-bold">{profile.display_name || 'Lumaine User'}</h2>
+                  <button
+                    onClick={() => setEditingUsername(true)}
+                    className="p-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
               <p className="text-indigo-100">Level {profile.level} Champion</p>
             </div>
           </div>
