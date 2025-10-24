@@ -266,7 +266,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
             </button>
           </div>
 
-          <div className="overflow-y-scroll overflow-x-hidden py-6 px-4" style={{ height: 'calc(100vh - 4rem - 7rem)' }}>
+          <div className="overflow-y-auto overflow-x-hidden py-4 px-4" style={{ height: 'calc(100vh - 64px - 88px)' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-4 ${
