@@ -453,42 +453,42 @@ export default function Books() {
           {filteredBooks.map((book) => (
             <div
               key={book.id}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+              className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-xl shadow-sm border-2 border-amber-200 overflow-hidden hover:shadow-lg hover:border-amber-300 transition-all"
             >
-              <div className="p-4">
+              <div className="p-5">
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="flex-shrink-0 w-10 h-14 bg-gray-100 rounded flex items-center justify-center">
-                    <Book className="w-5 h-5 text-gray-400" />
+                  <div className="flex-shrink-0 w-12 h-16 bg-gradient-to-br from-amber-400 to-orange-400 rounded-md flex items-center justify-center shadow-md">
+                    <Book className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">{book.title}</h3>
-                    <p className="text-sm text-gray-600">{book.author}</p>
+                    <h3 className="font-bold text-gray-900 line-clamp-2 mb-1">{book.title}</h3>
+                    <p className="text-sm text-gray-600 italic">by {book.author}</p>
                   </div>
                   {getStatusIcon(book.status)}
                 </div>
 
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                  <span className="text-xs px-2 py-1 bg-white/80 text-gray-700 rounded-full font-medium">
                     {getStatusLabel(book.status)}
                   </span>
                   {book.rating && (
                     <div className="flex items-center gap-1">
                       {[...Array(book.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+                        <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                       ))}
                     </div>
                   )}
                 </div>
 
                 {book.pages && (
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>Progress</span>
+                  <div className="mb-3 bg-white/60 rounded-lg p-2">
+                    <div className="flex justify-between text-xs text-gray-700 mb-1 font-medium">
+                      <span>📖 Progress</span>
                       <span>{book.current_page} / {book.pages} pages</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-blue-600 h-1.5 rounded-full transition-all"
+                        className="bg-gradient-to-r from-amber-400 to-orange-500 h-2 rounded-full transition-all"
                         style={{ width: `${Math.min((book.current_page / book.pages) * 100, 100)}%` }}
                       />
                     </div>
@@ -496,20 +496,20 @@ export default function Books() {
                 )}
 
                 {book.review && (
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{book.review}</p>
+                  <p className="text-sm text-gray-700 mb-3 line-clamp-2 bg-white/60 rounded-lg p-2">{book.review}</p>
                 )}
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(book)}
-                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-white text-amber-700 rounded-lg hover:bg-amber-100 transition-colors font-medium shadow-sm"
                   >
-                    <Edit2 className="w-3.5 h-3.5" />
+                    <Edit2 className="w-4 h-4" />
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(book.id)}
-                    className="flex-1 px-3 py-1.5 text-sm bg-gray-50 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                    className="flex-1 px-3 py-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium shadow-sm"
                   >
                     Delete
                   </button>
