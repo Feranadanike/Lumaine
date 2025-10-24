@@ -469,8 +469,8 @@ export default function Home({ onViewChange }: HomeProps) {
                 <Lightbulb className="h-5 w-5 text-amber-500" />
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today's Focus</h3>
               </div>
-              <p className="text-lg font-medium text-slate-900 dark:text-white mb-2 italic">"{getDailyQuote().quote}"</p>
-              <p className="text-sm text-slate-900 dark:text-white font-medium">{getDailyQuote().focus}</p>
+              <p className="text-lg font-medium text-slate-900 mb-2 italic">"{getDailyQuote().quote}"</p>
+              <p className="text-sm text-slate-900 font-medium">{getDailyQuote().focus}</p>
             </div>
           </div>
         </div>
