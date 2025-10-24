@@ -219,11 +219,20 @@ export default function Insights() {
       </div>
 
       {showAISummary && aiSummary && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 my-8">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={() => setShowAISummary(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-slate-900">Your Week in Review</h2>
-              <button onClick={() => setShowAISummary(false)} className="text-slate-400 hover:text-slate-600">
+              <button
+                onClick={() => setShowAISummary(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
