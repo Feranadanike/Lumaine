@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Droplet, Dumbbell, PiggyBank, BookOpen, Heart, TrendingUp, Sparkles, Target, Clock, CheckCircle2, Circle, Lightbulb, Quote } from 'lucide-react';
+import { Droplet, Dumbbell, PiggyBank, BookOpen, Heart, TrendingUp, Sparkles, Target, Clock, CheckCircle2, Circle, Lightbulb, Quote, ChevronDown, ChevronRight, Activity, Brain, Wallet, Users, Smile, Calendar, Utensils, Compass, StickyNote, Film, Link, Trophy, Image, DollarSign, CreditCard } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -53,6 +53,7 @@ export default function Home({ onViewChange }: HomeProps) {
   const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [todayTasks, setTodayTasks] = useState<TodayTask[]>([]);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['overview']));
 
   useEffect(() => {
     if (user) {
@@ -376,54 +377,92 @@ export default function Home({ onViewChange }: HomeProps) {
     return quotes[quoteIndex];
   };
 
-  const quickActions = [
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) {
+        next.delete(sectionId);
+      } else {
+        next.add(sectionId);
+      }
+      return next;
+    });
+  };
+
+  const sections = [
     {
-      id: 'skincare',
-      title: 'Skincare',
-      description: '✨ Glow up time',
-      icon: Droplet,
-      color: 'from-pink-300 to-rose-300',
-      streak: stats.skincareStreak,
+      id: 'overview',
+      title: 'Overview',
+      icon: Activity,
+      gradient: 'from-blue-500 to-cyan-500',
+      bgGradient: 'from-blue-50 to-cyan-50',
     },
     {
-      id: 'gym',
-      title: 'Workout',
-      description: '💪 Get moving',
-      icon: Dumbbell,
-      color: 'from-amber-300 to-orange-300',
-      streak: stats.workoutStreak,
-    },
-    {
-      id: 'journal',
-      title: 'Journal',
-      description: '📝 Daily reflection',
-      icon: BookOpen,
-      color: 'from-purple-300 to-pink-300',
-      streak: stats.journalStreak,
-    },
-    {
-      id: 'hobbies',
-      title: 'Hobbies',
-      description: '🎨 Creative time',
+      id: 'health',
+      title: 'Health & Wellness',
       icon: Heart,
-      color: 'from-rose-300 to-pink-400',
-      streak: stats.hobbyStreak,
+      gradient: 'from-rose-500 to-pink-500',
+      bgGradient: 'from-rose-50 to-pink-50',
+      cards: [
+        { id: 'gym', title: 'Gym & Workouts', icon: Dumbbell, color: 'from-amber-400 to-orange-400' },
+        { id: 'mealprep', title: 'Meal Prep', icon: Utensils, color: 'from-green-400 to-emerald-400' },
+        { id: 'skincare', title: 'Skincare', icon: Droplet, color: 'from-pink-400 to-rose-400' },
+        { id: 'wellness', title: 'Wellness Tracker', icon: Activity, color: 'from-purple-400 to-pink-400' },
+        { id: 'mooddiary', title: 'Mood Diary', icon: Smile, color: 'from-yellow-400 to-amber-400' },
+      ]
     },
     {
-      id: 'savings',
-      title: 'Savings',
-      description: '💰 Future you',
-      icon: PiggyBank,
-      color: 'from-emerald-300 to-teal-300',
-      streak: 0,
-    },
-    {
-      id: 'goals',
-      title: 'Goals',
-      description: '🎯 Dream big',
+      id: 'productivity',
+      title: 'Productivity',
       icon: Target,
-      color: 'from-blue-300 to-cyan-300',
-      streak: 0,
+      gradient: 'from-purple-500 to-blue-500',
+      bgGradient: 'from-purple-50 to-blue-50',
+      cards: [
+        { id: 'planner', title: 'Planner', icon: Calendar, color: 'from-blue-400 to-cyan-400' },
+        { id: 'goals', title: 'Goals', icon: Target, color: 'from-indigo-400 to-purple-400' },
+        { id: 'journal', title: 'Journal', icon: BookOpen, color: 'from-violet-400 to-purple-400' },
+        { id: 'notes', title: 'Notes', icon: StickyNote, color: 'from-yellow-400 to-orange-400' },
+        { id: 'books', title: 'Books', icon: BookOpen, color: 'from-teal-400 to-cyan-400' },
+        { id: 'hobbies', title: 'Hobbies', icon: Compass, color: 'from-rose-400 to-pink-400' },
+      ]
+    },
+    {
+      id: 'finance',
+      title: 'Personal Finance',
+      icon: DollarSign,
+      gradient: 'from-emerald-500 to-teal-500',
+      bgGradient: 'from-emerald-50 to-teal-50',
+      cards: [
+        { id: 'finance', title: 'Finance Dashboard', icon: TrendingUp, color: 'from-green-400 to-emerald-400' },
+        { id: 'wallet', title: 'Wallet & Cards', icon: CreditCard, color: 'from-blue-400 to-indigo-400' },
+        { id: 'savings', title: 'Savings Tracker', icon: PiggyBank, color: 'from-emerald-400 to-teal-400' },
+      ]
+    },
+    {
+      id: 'ai',
+      title: 'AI Assistant',
+      icon: Brain,
+      gradient: 'from-violet-500 to-purple-500',
+      bgGradient: 'from-violet-50 to-purple-50',
+      cards: [
+        { id: 'aicoach', title: 'AI Coach', icon: Sparkles, color: 'from-purple-400 to-pink-400' },
+        { id: 'insights', title: 'Insights', icon: Lightbulb, color: 'from-amber-400 to-orange-400' },
+      ]
+    },
+    {
+      id: 'personal',
+      title: 'Personal',
+      icon: Users,
+      gradient: 'from-pink-500 to-rose-500',
+      bgGradient: 'from-pink-50 to-rose-50',
+      cards: [
+        { id: 'profile', title: 'Profile', icon: Users, color: 'from-slate-400 to-gray-400' },
+        { id: 'achievements', title: 'Achievements', icon: Trophy, color: 'from-yellow-400 to-amber-400' },
+        { id: 'memories', title: 'Memories', icon: Image, color: 'from-purple-400 to-pink-400' },
+        { id: 'relationships', title: 'Relationships', icon: Heart, color: 'from-rose-400 to-pink-400' },
+        { id: 'savedlinks', title: 'Saved Links', icon: Link, color: 'from-blue-400 to-cyan-400' },
+        { id: 'entertainment', title: 'Entertainment', icon: Film, color: 'from-indigo-400 to-purple-400' },
+      ]
     },
   ];
 
@@ -436,7 +475,7 @@ export default function Home({ onViewChange }: HomeProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className={`relative overflow-hidden bg-gradient-to-br ${getColorClasses().gradient} rounded-3xl shadow-xl p-8 md:p-12`}>
         <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${getColorClasses().light} opacity-30 rounded-full blur-3xl`} />
         <div className={`absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr ${getColorClasses().light} opacity-30 rounded-full blur-3xl`} />
@@ -482,167 +521,172 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {todayTasks.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="h-6 w-6 text-blue-500" />
-                Today's Tasks
-              </h2>
-              <span className="text-sm text-slate-600">
-                {todayTasks.filter(t => t.completed).length} of {todayTasks.length} completed
-              </span>
-            </div>
-            <div className="space-y-3">
-              {todayTasks.map((task) => {
-              const getTaskIcon = () => {
-                switch (task.type) {
-                  case 'skincare': return Droplet;
-                  case 'workout': return Dumbbell;
-                  case 'journal': return BookOpen;
-                  case 'hobby': return Heart;
-                  case 'goal': return Target;
-                  default: return Circle;
-                }
-              };
-              const TaskIcon = getTaskIcon();
-              const getTaskColor = () => {
-                switch (task.type) {
-                  case 'skincare': return 'text-pink-500 bg-pink-50';
-                  case 'workout': return 'text-amber-500 bg-amber-50';
-                  case 'journal': return 'text-purple-500 bg-purple-50';
-                  case 'hobby': return 'text-rose-500 bg-rose-50';
-                  case 'goal': return 'text-blue-500 bg-blue-50';
-                  default: return 'text-slate-500 bg-slate-50';
-                }
-              };
+      {sections.map((section) => {
+        const SectionIcon = section.icon;
+        const isExpanded = expandedSections.has(section.id);
 
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => onViewChange(task.type)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
-                    task.completed
-                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 animate-pulse-once'
-                      : 'bg-gradient-to-r from-white to-slate-50 border-slate-200 hover:border-blue-300 hover:scale-[1.02]'
-                  }`}
-                >
-                  <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
-                    <TaskIcon className="h-5 w-5" />
+        return (
+          <div key={section.id} className="relative">
+            <button
+              onClick={() => toggleSection(section.id)}
+              className={`w-full group relative overflow-hidden bg-gradient-to-br ${section.bgGradient} rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border-2 border-white/50`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl bg-gradient-to-br ${section.gradient} shadow-lg transform group-hover:scale-110 transition-transform duration-300`}>
+                    <SectionIcon className="h-6 w-6 text-white" />
                   </div>
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`font-semibold transition-all duration-300 ${task.completed ? 'text-slate-600 line-through' : 'text-slate-900'}`}>
-                        {task.title}
-                      </h3>
-                      {task.time && (
-                        <span className="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full">
-                          {task.time}
-                        </span>
-                      )}
-                    </div>
-                    {task.details && (
-                      <p className="text-sm text-slate-500 mt-1">{task.details}</p>
-                    )}
-                  </div>
-                  {task.completed ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 animate-bounce-in" />
-                  ) : (
-                    <Circle className="h-6 w-6 text-slate-300 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
-                  )}
-                </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-white shadow-md">
-            <Quote className="h-7 w-7 text-purple-500" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-amber-500" />
-              <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Today's Focus</h3>
-            </div>
-            <p className="text-lg font-medium text-slate-900 mb-2 italic">"{getDailyQuote().quote}"</p>
-            <p className="text-sm text-purple-600 font-medium">{getDailyQuote().focus}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className={`relative bg-gradient-to-br ${getWeeklyReflection().color} rounded-2xl shadow-lg p-6 border-2 ${getWeeklyReflection().borderColor}`}>
-        <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-xl bg-white shadow-md`}>
-            {(() => {
-              const ReflectionIcon = getWeeklyReflection().icon;
-              return <ReflectionIcon className="h-7 w-7 text-slate-700" />;
-            })()}
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-slate-900 mb-2">{getWeeklyReflection().title}</h3>
-            <p className="text-slate-700 leading-relaxed">{getWeeklyReflection().message}</p>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-6">What would you like to do today?</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            const progress = Math.min((action.streak / 7) * 100, 100);
-            const colorMap: Record<string, string> = {
-              'from-pink-300 to-rose-300': '#ec4899',
-              'from-amber-300 to-orange-300': '#f59e0b',
-              'from-purple-300 to-pink-300': '#a855f7',
-              'from-rose-300 to-pink-400': '#f43f5e',
-              'from-emerald-300 to-teal-300': '#10b981',
-              'from-blue-300 to-cyan-300': '#3b82f6',
-            };
-            const ringColor = colorMap[action.color] || '#a855f7';
-
-            return (
-              <button
-                key={action.id}
-                onClick={() => onViewChange(action.id)}
-                className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 p-6"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-
-                <div className="relative z-10">
-                  <div className="relative inline-block mb-3">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <ProgressRing progress={progress} size={60} strokeWidth={4} color={ringColor} />
-                    </div>
-                    <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${action.color} shadow-lg group-hover:bg-white/20 transition-all duration-300 relative z-10`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-
-                  {action.streak > 0 && (
-                    <div className="absolute top-0 right-0 flex items-center gap-1 bg-amber-100 px-2 py-1 rounded-full">
-                      <TrendingUp className="h-3 w-3 text-amber-600" />
-                      <span className="text-xs font-bold text-amber-600">{action.streak}</span>
-                    </div>
-                  )}
-
-                  <h3 className="text-base font-bold text-slate-900 mb-1 group-hover:text-white transition-colors">
-                    {action.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 group-hover:text-white/90 transition-colors">
-                    {action.description}
-                  </p>
+                  <h2 className="text-2xl font-bold text-slate-900">{section.title}</h2>
                 </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+                <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+                  <ChevronDown className="h-6 w-6 text-slate-700" />
+                </div>
+              </div>
+            </button>
+
+            <div
+              className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                isExpanded ? 'max-h-[5000px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+              }`}
+            >
+              {section.id === 'overview' ? (
+                <div className="space-y-6">
+                  {todayTasks.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
+                      <div className="flex items-center justify-between mb-5">
+                        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                          <Clock className="h-6 w-6 text-blue-500" />
+                          Today's Tasks
+                        </h2>
+                        <span className="text-sm text-slate-600">
+                          {todayTasks.filter(t => t.completed).length} of {todayTasks.length} completed
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        {todayTasks.map((task) => {
+                          const getTaskIcon = () => {
+                            switch (task.type) {
+                              case 'skincare': return Droplet;
+                              case 'workout': return Dumbbell;
+                              case 'journal': return BookOpen;
+                              case 'hobby': return Heart;
+                              case 'goal': return Target;
+                              default: return Circle;
+                            }
+                          };
+                          const TaskIcon = getTaskIcon();
+                          const getTaskColor = () => {
+                            switch (task.type) {
+                              case 'skincare': return 'text-pink-500 bg-pink-50';
+                              case 'workout': return 'text-amber-500 bg-amber-50';
+                              case 'journal': return 'text-purple-500 bg-purple-50';
+                              case 'hobby': return 'text-rose-500 bg-rose-50';
+                              case 'goal': return 'text-blue-500 bg-blue-50';
+                              default: return 'text-slate-500 bg-slate-50';
+                            }
+                          };
+
+                          return (
+                            <button
+                              key={task.id}
+                              onClick={() => onViewChange(task.type)}
+                              className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
+                                task.completed
+                                  ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300'
+                                  : 'bg-gradient-to-r from-white to-slate-50 border-slate-200 hover:border-blue-300 hover:scale-[1.02]'
+                              }`}
+                            >
+                              <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
+                                <TaskIcon className="h-5 w-5" />
+                              </div>
+                              <div className="flex-1 text-left">
+                                <div className="flex items-center gap-2">
+                                  <h3 className={`font-semibold transition-all duration-300 ${task.completed ? 'text-slate-600 line-through' : 'text-slate-900'}`}>
+                                    {task.title}
+                                  </h3>
+                                  {task.time && (
+                                    <span className="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full">
+                                      {task.time}
+                                    </span>
+                                  )}
+                                </div>
+                                {task.details && (
+                                  <p className="text-sm text-slate-500 mt-1">{task.details}</p>
+                                )}
+                              </div>
+                              {task.completed ? (
+                                <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                              ) : (
+                                <Circle className="h-6 w-6 text-slate-300 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 rounded-xl bg-white shadow-md">
+                        <Quote className="h-7 w-7 text-purple-500" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lightbulb className="h-5 w-5 text-amber-500" />
+                          <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Today's Focus</h3>
+                        </div>
+                        <p className="text-lg font-medium text-slate-900 mb-2 italic">"{getDailyQuote().quote}"</p>
+                        <p className="text-sm text-purple-600 font-medium">{getDailyQuote().focus}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={`relative bg-gradient-to-br ${getWeeklyReflection().color} rounded-2xl shadow-lg p-6 border-2 ${getWeeklyReflection().borderColor}`}>
+                    <div className="flex items-start gap-4">
+                      <div className={`p-3 rounded-xl bg-white shadow-md`}>
+                        {(() => {
+                          const ReflectionIcon = getWeeklyReflection().icon;
+                          return <ReflectionIcon className="h-7 w-7 text-slate-700" />;
+                        })()}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">{getWeeklyReflection().title}</h3>
+                        <p className="text-slate-700 leading-relaxed">{getWeeklyReflection().message}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {section.cards?.map((card) => {
+                    const CardIcon = card.icon;
+                    return (
+                      <button
+                        key={card.id}
+                        onClick={() => onViewChange(card.id)}
+                        className="group relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 p-6"
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                        <div className="relative z-10">
+                          <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${card.color} shadow-lg group-hover:bg-white/20 transition-all duration-300 mb-4`}>
+                            <CardIcon className="h-7 w-7 text-white" />
+                          </div>
+
+                          <h3 className="text-base font-bold text-slate-900 group-hover:text-white transition-colors">
+                            {card.title}
+                          </h3>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
