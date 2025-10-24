@@ -70,8 +70,72 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Deleting account for user: ${user.id}`);
 
+    const tables = [
+      'daily_activities',
+      'user_achievements',
+      'meditation_sessions',
+      'sleep_logs',
+      'water_intake',
+      'planned_workouts',
+      'planned_skincare_routines',
+      'skincare_routine_schedules',
+      'savings_transactions',
+      'hobby_logs',
+      'workout_sessions',
+      'skincare_logs',
+      'skincare_products',
+      'journal_entries',
+      'daily_achievements',
+      'weekly_reflections',
+      'hobbies',
+      'daily_planner',
+      'weekly_planner',
+      'monthly_planner',
+      'yearly_goals',
+      'reminders',
+      'goals',
+      'savings_goals',
+      'saved_links',
+      'entertainment_items',
+      'user_profiles',
+    ];
+
+    for (const table of tables) {
+      try {
+        const { error } = await supabaseAdmin
+          .from(table)
+          .delete()
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error(`Error deleting from ${table}:`, error);
+        } else {
+          console.log(`Successfully deleted from ${table}`);
+        }
+      } catch (tableError) {
+        console.error(`Exception deleting from ${table}:`, tableError);
+      }
+    }
+
+    try {
+      const { error: profileError } = await supabaseAdmin
+        .from('user_profiles')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Error deleting user_profiles:', profileError);
+      } else {
+        console.log('Successfully deleted user_profiles');
+      }
+    } catch (profileException) {
+      console.error('Exception deleting user_profiles:', profileException);
+    }
+
+    console.log('Attempting to delete auth user...');
     const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
-      user.id
+      user.id,
+      true
     );
 
     if (deleteAuthError) {
@@ -92,7 +156,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log('Account deleted successfully (CASCADE handled all related data)');
+    console.log('Account deleted successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Account deleted successfully' }),
