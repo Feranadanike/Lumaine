@@ -177,10 +177,10 @@ export default function Hobbies() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-8 pb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
             <Heart className="h-8 w-8 text-rose-400" />
             Hobbies
           </h1>
@@ -188,7 +188,7 @@ export default function Hobbies() {
         </div>
         <button
           onClick={() => setShowHobbyForm(true)}
-          className="flex items-center gap-2 bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition-colors shadow-lg"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-rose-400 text-white px-4 py-2 rounded-lg hover:bg-rose-500 transition-colors shadow-lg"
         >
           <Plus className="h-5 w-5" />
           Add Hobby

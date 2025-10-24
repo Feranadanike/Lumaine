@@ -183,17 +183,17 @@ export default function Gym() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-8 pb-8">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
             <Dumbbell className="h-8 w-8 text-amber-400" />
             Gym
           </h1>
           <p className="text-slate-600 mt-1">Plan your week and track your workouts</p>
         </div>
-        <div className="flex gap-3">
-          <div className="flex bg-slate-100 rounded-lg p-1">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+          <div className="flex bg-slate-100 rounded-lg p-1 w-full sm:w-auto">
             <button
               onClick={() => setView('plan')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${

@@ -17,7 +17,8 @@ import {
   Smile,
   Bookmark,
   Film,
-  Trophy
+  Trophy,
+  TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -33,6 +34,7 @@ const navigationCategories = [
     name: 'Overview',
     items: [
       { id: 'insights', name: 'Insights', icon: BarChart3 },
+      { id: 'analytics', name: 'Analytics', icon: TrendingUp },
       { id: 'goals', name: 'Goals', icon: Target },
       { id: 'achievements', name: 'Achievements', icon: Trophy },
     ]

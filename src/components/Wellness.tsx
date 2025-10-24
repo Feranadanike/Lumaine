@@ -223,16 +223,16 @@ export default function Wellness() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8 pb-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
           <Heart className="h-8 w-8 text-rose-500" />
           Wellness
         </h1>
         <p className="text-slate-600 mt-1">Meditation, sleep, and hydration tracking</p>
       </div>
 
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-2 overflow-x-auto border-b border-slate-200">
         <button
           onClick={() => setActiveTab('meditation')}
           className={`px-6 py-3 font-medium transition-colors ${

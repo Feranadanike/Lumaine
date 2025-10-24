@@ -367,26 +367,26 @@ export default function Skincare() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 md:space-y-8 pb-8">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
             <Sparkles className="h-8 w-8 text-pink-400" />
             Skincare
           </h1>
           <p className="text-slate-600 mt-1">Track your routine and products</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
           <button
             onClick={() => setShowScheduleForm(true)}
-            className="flex items-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-lg"
+            className="flex items-center justify-center gap-2 bg-blue-400 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors shadow-lg"
           >
             <Clock className="h-5 w-5" />
             Schedule
           </button>
           <button
             onClick={() => setShowProductForm(true)}
-            className="flex items-center gap-2 bg-pink-400 text-white px-4 py-2 rounded-lg hover:bg-pink-500 transition-colors shadow-lg"
+            className="flex items-center justify-center gap-2 bg-pink-400 text-white px-4 py-2 rounded-lg hover:bg-pink-500 transition-colors shadow-lg"
           >
             <Plus className="h-5 w-5" />
             Add Product
