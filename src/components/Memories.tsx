@@ -151,7 +151,8 @@ export default function Memories() {
         .eq('id', id);
 
       if (error) throw error;
-      loadMemories();
+      setSelectedMemory(null);
+      await loadMemories();
     } catch (error) {
       console.error('Error deleting memory:', error);
     }
