@@ -4,6 +4,7 @@ export interface UserProfile {
   skin_type?: string;
   skin_concerns?: string[];
   fitness_goals?: string;
+  currency?: string;
   created_at: string;
   updated_at: string;
 }
