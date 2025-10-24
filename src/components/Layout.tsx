@@ -8,6 +8,7 @@ import {
   RefreshCw,
   BookOpen,
   Calendar,
+  CalendarDays,
   Heart,
   BarChart3,
   Menu,
@@ -41,6 +42,7 @@ const navigationCategories = [
   {
     name: 'Overview',
     items: [
+      { id: 'calendar', name: 'Calendar', icon: CalendarDays },
       { id: 'insights', name: 'Insights', icon: BarChart3 },
       { id: 'analytics', name: 'Analytics', icon: TrendingUp },
       { id: 'goals', name: 'Goals', icon: Target },
