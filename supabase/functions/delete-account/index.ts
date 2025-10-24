@@ -1,3 +1,4 @@
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
@@ -21,7 +22,7 @@ Deno.serve(async (req: Request) => {
     if (!authHeader) {
       console.error('Missing authorization header');
       return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
+        JSON.stringify({ error: 'Unauthorized', details: 'Missing authorization header' }),
         {
           status: 401,
           headers: {
@@ -32,8 +33,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    console.log('Token extracted, length:', token.length);
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -46,13 +54,13 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    console.log('Verifying user with token...');
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+    console.log('Getting user from client...');
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
       console.error('User verification failed:', userError?.message);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message || 'Auth session missing!' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message || 'Invalid token' }),
         {
           status: 401,
           headers: {
@@ -94,6 +102,7 @@ Deno.serve(async (req: Request) => {
       'entertainment_items',
     ];
 
+    console.log('Starting data deletion...');
     for (const table of tables) {
       try {
         const { error } = await supabaseAdmin
@@ -111,6 +120,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    console.log('Deleting user profile...');
     try {
       const { error: profileError } = await supabaseAdmin
         .from('user_profiles')
