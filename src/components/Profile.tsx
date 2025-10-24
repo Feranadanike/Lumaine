@@ -235,23 +235,42 @@ export default function Profile() {
 
     setIsDeleting(true);
     try {
-      const { data, error } = await supabase.functions.invoke('delete-account', {
-        method: 'POST',
-      });
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (error) {
-        console.error('Delete account error:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        alert(`Failed to delete account: ${error.message || 'Unknown error'}\nDetails: ${JSON.stringify(error)}`);
+      if (!session) {
+        alert('Session expired. Please log in again.');
         setIsDeleting(false);
         return;
       }
 
-      console.log('Delete response data:', data);
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`;
 
-      if (!data?.success) {
-        console.error('Delete account failed:', data);
-        alert(`Failed to delete account: ${data?.error || 'Unknown error'}\nDetails: ${data?.details || 'No details'}`);
+      console.log('Calling delete-account function...');
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+      });
+
+      console.log('Response status:', response.status);
+
+      const result = await response.json();
+      console.log('Response data:', result);
+
+      if (!response.ok) {
+        console.error('Delete account error:', result);
+        alert(`Failed to delete account: ${result.error || 'Unknown error'}\nDetails: ${result.details || 'No details available'}`);
+        setIsDeleting(false);
+        return;
+      }
+
+      if (!result.success) {
+        console.error('Delete account failed:', result);
+        alert(`Failed to delete account: ${result.error || 'Unknown error'}\nDetails: ${result.details || 'No details'}`);
         setIsDeleting(false);
         return;
       }
@@ -264,7 +283,7 @@ export default function Profile() {
       window.location.href = '/';
     } catch (error) {
       console.error('Error deleting account:', error);
-      alert('Failed to delete account. Please try again or contact support.');
+      alert(`Failed to delete account. Please try again or contact support.\nError: ${error}`);
       setIsDeleting(false);
     }
   };
