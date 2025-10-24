@@ -47,7 +47,9 @@ function AppContent() {
       {currentView === 'goals' && <Goals />}
       {currentView === 'skincare' && <Skincare />}
       {currentView === 'gym' && <Gym />}
-      {currentView === 'savings' && <Finance />}
+      {currentView === 'savings' && <Finance defaultTab="savings" />}
+      {currentView === 'bills' && <Finance defaultTab="bills" />}
+      {currentView === 'subscriptions' && <Finance defaultTab="subscriptions" />}
       {currentView === 'journal' && <Journal />}
       {currentView === 'wellness' && <Wellness />}
       {currentView === 'planner' && <Planner />}

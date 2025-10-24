@@ -3,7 +3,9 @@ import {
   Home,
   Droplet,
   Dumbbell,
-  Wallet,
+  PiggyBank,
+  CreditCard,
+  RefreshCw,
   BookOpen,
   Calendar,
   Heart,
@@ -60,9 +62,16 @@ const navigationCategories = [
     ]
   },
   {
-    name: 'Finance & AI',
+    name: 'Finance',
     items: [
-      { id: 'savings', name: 'Finance', icon: Wallet },
+      { id: 'savings', name: 'Savings', icon: PiggyBank },
+      { id: 'bills', name: 'Bills', icon: CreditCard },
+      { id: 'subscriptions', name: 'Subscriptions', icon: RefreshCw },
+    ]
+  },
+  {
+    name: 'AI & Profile',
+    items: [
       { id: 'coach', name: 'Lumaine Coach', icon: Bot },
       { id: 'profile', name: 'Profile', icon: User },
     ]

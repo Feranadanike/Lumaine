@@ -6,9 +6,13 @@ import { SavingsGoal, Bill, Subscription } from '../types';
 
 type Tab = 'savings' | 'bills' | 'subscriptions';
 
-export default function Finance() {
+interface FinanceProps {
+  defaultTab?: Tab;
+}
+
+export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('savings');
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
   const [loading, setLoading] = useState(true);
 
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
