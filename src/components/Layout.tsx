@@ -175,7 +175,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
         <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-slate-200 shadow-sm">
           <div className="flex items-center h-16 px-6 border-b border-slate-200">
             <Heart className={`h-8 w-8 ${getColorClasses('text')}`} />
-            <span className="ml-2 text-xl font-bold text-slate-900">MyLumere</span>
+            <span className="ml-2 text-xl font-bold text-slate-900">Lumaine</span>
           </div>
 
           <div className="flex-1 overflow-y-auto py-4 px-4">
