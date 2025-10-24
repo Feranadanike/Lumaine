@@ -70,7 +70,6 @@ const navigationCategories = [
       { id: 'planner', name: 'Planner', icon: Calendar },
       { id: 'journal', name: 'Journal', icon: BookOpen },
       { id: 'mooddiary', name: 'Mood Diary', icon: Heart },
-      { id: 'notes', name: 'Quick Notes', icon: FileText },
       { id: 'wallet', name: 'Wallet', icon: Wallet },
       { id: 'hobbies', name: 'Hobbies', icon: Smile },
       { id: 'links', name: 'Saved Links', icon: Bookmark },
@@ -80,6 +79,7 @@ const navigationCategories = [
   {
     name: 'Personal',
     items: [
+      { id: 'notes', name: 'Quick Notes', icon: FileText },
       { id: 'memories', name: 'Memories', icon: Camera },
       { id: 'books', name: 'Reading List', icon: Book },
       { id: 'relationships', name: 'Relationships', icon: Users },
