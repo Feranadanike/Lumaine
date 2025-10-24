@@ -68,6 +68,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    console.log(`Deleting account for user: ${user.id}`);
+
     const tables = [
       'user_achievements',
       'workout_sessions',
@@ -89,17 +91,42 @@ Deno.serve(async (req: Request) => {
 
       if (error) {
         console.error(`Error deleting from ${table}:`, error);
+      } else {
+        console.log(`Successfully deleted from ${table}`);
       }
     }
 
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
-      user.id
-    );
+    console.log('Attempting to delete auth user...');
+    try {
+      const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
+        user.id
+      );
 
-    if (deleteAuthError) {
-      console.error('Error deleting auth user:', deleteAuthError);
+      if (deleteAuthError) {
+        console.error('Error deleting auth user:', deleteAuthError);
+        console.error('Delete auth error details:', JSON.stringify(deleteAuthError));
+        return new Response(
+          JSON.stringify({
+            error: 'Failed to delete authentication account',
+            details: deleteAuthError.message || 'Unknown error'
+          }),
+          {
+            status: 500,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
+      console.log('Auth user deleted successfully');
+    } catch (authDeleteException) {
+      console.error('Exception deleting auth user:', authDeleteException);
       return new Response(
-        JSON.stringify({ error: 'Failed to delete authentication account' }),
+        JSON.stringify({
+          error: 'Exception while deleting authentication account',
+          details: String(authDeleteException)
+        }),
         {
           status: 500,
           headers: {
@@ -123,7 +150,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error('Error in delete-account function:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: String(error) }),
       {
         status: 500,
         headers: {

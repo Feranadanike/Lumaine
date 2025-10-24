@@ -239,6 +239,7 @@ export default function Profile() {
 
       if (!session) {
         alert('Session expired. Please log in again.');
+        setIsDeleting(false);
         return;
       }
 
@@ -255,11 +256,18 @@ export default function Profile() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete account');
+        console.error('Delete account error:', result);
+        alert(`Failed to delete account: ${result.error || 'Unknown error'}`);
+        setIsDeleting(false);
+        return;
       }
 
-      alert('Your account has been permanently deleted.');
-      await signOut();
+      setShowDeleteConfirm(false);
+      setDeleteConfirmText('');
+
+      await supabase.auth.signOut();
+
+      window.location.href = '/';
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Failed to delete account. Please try again or contact support.');
