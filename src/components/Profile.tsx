@@ -235,29 +235,20 @@ export default function Profile() {
 
     setIsDeleting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('delete-account', {
+        method: 'POST',
+      });
 
-      if (!session) {
-        alert('Session expired. Please log in again.');
+      if (error) {
+        console.error('Delete account error:', error);
+        alert(`Failed to delete account: ${error.message || 'Unknown error'}`);
         setIsDeleting(false);
         return;
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error('Delete account error:', result);
-        alert(`Failed to delete account: ${result.error || 'Unknown error'}`);
+      if (!data?.success) {
+        console.error('Delete account failed:', data);
+        alert(`Failed to delete account: ${data?.error || 'Unknown error'}`);
         setIsDeleting(false);
         return;
       }
