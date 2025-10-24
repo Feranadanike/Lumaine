@@ -33,14 +33,28 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
     }
 
     setLoading(true);
-    const lowerQuery = searchQuery.toLowerCase();
     const allResults: SearchResult[] = [];
 
     try {
+      const searches = [
+        supabase.from('journal_entries').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('goals').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('daily_planner').select('*').eq('user_id', user.id).limit(10),
+        supabase.from('hobbies').select('*').eq('user_id', user.id).ilike('hobby_name', `%${searchQuery}%`).limit(5),
+        supabase.from('entertainment_items').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,notes.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('saved_links').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('recipes').select('*').eq('user_id', user.id).or(`recipe_name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('workout_sessions').select('*').eq('user_id', user.id).ilike('workout_name', `%${searchQuery}%`).limit(5),
+        supabase.from('books').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%`).limit(5),
+        supabase.from('social_relationships').select('*').eq('user_id', user.id).ilike('person_name', `%${searchQuery}%`).limit(5),
+        supabase.from('savings_goals').select('*').eq('user_id', user.id).ilike('goal_name', `%${searchQuery}%`).limit(5),
+        supabase.from('bills').select('*').eq('user_id', user.id).ilike('bill_name', `%${searchQuery}%`).limit(5),
+        supabase.from('subscriptions').select('*').eq('user_id', user.id).ilike('service_name', `%${searchQuery}%`).limit(5),
+      ];
+
       const [
         journals,
         goals,
-        notes,
         plans,
         hobbies,
         entertainment,
@@ -48,20 +62,11 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
         recipes,
         workouts,
         books,
-        relationships
-      ] = await Promise.all([
-        supabase.from('journal_entries').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('goals').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('notes').select('*').eq('user_id', user.id).eq('is_deleted', false).or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('daily_plans').select('*').eq('user_id', user.id).limit(5),
-        supabase.from('hobbies').select('*').eq('user_id', user.id).ilike('hobby_name', `%${searchQuery}%`).limit(5),
-        supabase.from('entertainment_items').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,notes.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('saved_links').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('recipes').select('*').eq('user_id', user.id).or(`recipe_name.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('workout_sessions').select('*').eq('user_id', user.id).ilike('workout_name', `%${searchQuery}%`).limit(5),
-        supabase.from('books').select('*').eq('user_id', user.id).or(`title.ilike.%${searchQuery}%,author.ilike.%${searchQuery}%`).limit(5),
-        supabase.from('relationships').select('*').eq('user_id', user.id).ilike('person_name', `%${searchQuery}%`).limit(5),
-      ]);
+        relationships,
+        savings,
+        bills,
+        subscriptions
+      ] = await Promise.all(searches);
 
       if (journals.data) {
         journals.data.forEach((item: any) => {
@@ -91,23 +96,10 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
         });
       }
 
-      if (notes.data) {
-        notes.data.forEach((item: any) => {
-          allResults.push({
-            id: item.id,
-            type: 'Note',
-            title: item.title || 'Untitled Note',
-            description: item.content?.substring(0, 100),
-            icon: FileText,
-            view: 'notes',
-          });
-        });
-      }
-
       if (plans.data) {
         plans.data.forEach((item: any) => {
-          const tasksText = JSON.stringify(item.tasks || []);
-          if (tasksText.toLowerCase().includes(lowerQuery)) {
+          const tasksText = JSON.stringify(item.tasks || []).toLowerCase();
+          if (tasksText.includes(searchQuery.toLowerCase())) {
             allResults.push({
               id: item.id,
               type: 'Plan',
@@ -211,6 +203,45 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
         });
       }
 
+      if (savings.data) {
+        savings.data.forEach((item: any) => {
+          allResults.push({
+            id: item.id,
+            type: 'Savings Goal',
+            title: item.goal_name,
+            description: `$${item.current_amount} / $${item.target_amount}`,
+            icon: DollarSign,
+            view: 'savings',
+          });
+        });
+      }
+
+      if (bills.data) {
+        bills.data.forEach((item: any) => {
+          allResults.push({
+            id: item.id,
+            type: 'Bill',
+            title: item.bill_name,
+            description: `$${item.amount} - Due day ${item.due_day}`,
+            icon: DollarSign,
+            view: 'bills',
+          });
+        });
+      }
+
+      if (subscriptions.data) {
+        subscriptions.data.forEach((item: any) => {
+          allResults.push({
+            id: item.id,
+            type: 'Subscription',
+            title: item.service_name,
+            description: `$${item.amount} - ${item.billing_cycle}`,
+            icon: DollarSign,
+            view: 'subscriptions',
+          });
+        });
+      }
+
       setResults(allResults);
     } catch (error) {
       console.error('Search error:', error);
@@ -275,7 +306,7 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
           <Search className="h-5 w-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search journals, goals, notes, plans..."
+            placeholder="Search journals, goals, workouts, recipes, bills..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none text-slate-900 dark:text-white placeholder-slate-400"
