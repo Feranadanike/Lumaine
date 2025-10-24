@@ -4,7 +4,11 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { JournalEntry } from '../types';
 
-export default function Journal() {
+interface JournalProps {
+  initialDate?: string;
+}
+
+export default function Journal({ initialDate }: JournalProps) {
   const { user } = useAuth();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [filteredEntries, setFilteredEntries] = useState<JournalEntry[]>([]);
@@ -13,11 +17,16 @@ export default function Journal() {
   const [loading, setLoading] = useState(true);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
 
+  const getDefaultDate = () => {
+    return initialDate || new Date().toISOString().split('T')[0];
+  };
+
   const [newEntry, setNewEntry] = useState({
     title: '',
     content: '',
     mood_score: 3,
     gratitude_items: ['', '', ''],
+    entry_date: getDefaultDate(),
   });
 
   useEffect(() => {
@@ -25,6 +34,13 @@ export default function Journal() {
       loadEntries();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (initialDate && !showForm) {
+      setShowForm(true);
+      setNewEntry(prev => ({ ...prev, entry_date: initialDate }));
+    }
+  }, [initialDate]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -77,6 +93,7 @@ export default function Journal() {
             content: newEntry.content,
             mood_score: newEntry.mood_score,
             gratitude_items: gratitudeFiltered.length > 0 ? gratitudeFiltered : null,
+            entry_date: newEntry.entry_date,
           },
         ])
         .select()
@@ -85,7 +102,7 @@ export default function Journal() {
       if (error) throw error;
 
       setEntries([data, ...entries]);
-      setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''] });
+      setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''], entry_date: getDefaultDate() });
       setShowForm(false);
     } catch (error) {
       console.error('Error adding entry:', error);
@@ -99,6 +116,7 @@ export default function Journal() {
       content: entry.content,
       mood_score: entry.mood_score || 3,
       gratitude_items: entry.gratitude_items || ['', '', ''],
+      entry_date: entry.entry_date || getDefaultDate(),
     });
     setShowForm(true);
   };
@@ -135,6 +153,7 @@ export default function Journal() {
           content: newEntry.content,
           mood_score: newEntry.mood_score,
           gratitude_items: gratitudeFiltered.length > 0 ? gratitudeFiltered : null,
+          entry_date: newEntry.entry_date,
         })
         .eq('id', editingEntry.id)
         .select()
@@ -143,7 +162,7 @@ export default function Journal() {
       if (error) throw error;
 
       setEntries(entries.map((e) => (e.id === editingEntry.id ? data : e)));
-      setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''] });
+      setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''], entry_date: getDefaultDate() });
       setShowForm(false);
       setEditingEntry(null);
     } catch (error) {
@@ -193,7 +212,7 @@ export default function Journal() {
                 onClick={() => {
                   setShowForm(false);
                   setEditingEntry(null);
-                  setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''] });
+                  setNewEntry({ title: '', content: '', mood_score: 3, gratitude_items: ['', '', ''], entry_date: getDefaultDate() });
                 }}
                 className="text-slate-400 hover:text-slate-600"
               >
@@ -202,6 +221,17 @@ export default function Journal() {
             </div>
 
             <form onSubmit={editingEntry ? handleUpdate : handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  value={newEntry.entry_date}
+                  onChange={(e) => setNewEntry({ ...newEntry, entry_date: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-300"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Title (optional)</label>
                 <input

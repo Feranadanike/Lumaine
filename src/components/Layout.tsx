@@ -31,18 +31,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import CalendarWidget from './CalendarWidget';
 
 interface LayoutProps {
   children: ReactNode;
   currentView: string;
-  onViewChange: (view: string) => void;
+  onViewChange: (view: string, date?: string) => void;
 }
 
 const navigationCategories = [
   {
     name: 'Overview',
     items: [
-      { id: 'calendar', name: 'Calendar', icon: CalendarDays },
       { id: 'insights', name: 'Insights', icon: BarChart3 },
       { id: 'analytics', name: 'Analytics', icon: TrendingUp },
       { id: 'goals', name: 'Goals', icon: Target },
@@ -121,21 +121,28 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
     await signOut();
   };
 
+  const handleDateAction = (action: string, date: string) => {
+    onViewChange(action, date);
+  };
+
   return (
     <div className={`min-h-screen bg-gradient-to-br ${getColorClasses('light')} via-white to-slate-50`}>
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm lg:hidden">
         <div className="px-4 sm:px-6">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Heart className={`h-8 w-8 ${getColorClasses('text')}`} />
               <span className="ml-2 text-xl font-bold text-slate-900">LumiBud</span>
             </div>
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-slate-600 hover:text-slate-900 p-2"
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <div className="flex items-center gap-2">
+              <CalendarWidget onDateAction={handleDateAction} />
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-slate-600 hover:text-slate-900 p-2"
+              >
+                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -263,6 +270,9 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
 
         <main className="flex-1 lg:pl-64">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="hidden lg:flex justify-end mb-4">
+              <CalendarWidget onDateAction={handleDateAction} />
+            </div>
             {children}
           </div>
         </main>

@@ -30,6 +30,12 @@ import Relationships from './components/Relationships';
 function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('home');
+  const [selectedDate, setSelectedDate] = useState<string | undefined>();
+
+  const handleViewChange = (view: string, date?: string) => {
+    setCurrentView(view);
+    setSelectedDate(date);
+  };
 
   console.log('AppContent render - loading:', loading, 'user:', !!user);
 
@@ -46,20 +52,20 @@ function AppContent() {
   }
 
   return (
-    <Layout currentView={currentView} onViewChange={setCurrentView}>
-      {currentView === 'home' && <Home onViewChange={setCurrentView} />}
+    <Layout currentView={currentView} onViewChange={handleViewChange}>
+      {currentView === 'home' && <Home onViewChange={(view) => handleViewChange(view)} />}
       {currentView === 'profile' && <Profile />}
       {currentView === 'coach' && <AICoach />}
-      {currentView === 'goals' && <Goals />}
-      {currentView === 'skincare' && <Skincare />}
-      {currentView === 'gym' && <Gym />}
-      {currentView === 'mealprep' && <MealPrep />}
+      {currentView === 'goals' && <Goals initialDate={selectedDate} />}
+      {currentView === 'skincare' && <Skincare initialDate={selectedDate} />}
+      {currentView === 'gym' && <Gym initialDate={selectedDate} />}
+      {currentView === 'mealprep' && <MealPrep initialDate={selectedDate} />}
       {currentView === 'savings' && <Finance defaultTab="savings" />}
       {currentView === 'bills' && <Finance defaultTab="bills" />}
       {currentView === 'subscriptions' && <Finance defaultTab="subscriptions" />}
-      {currentView === 'journal' && <Journal />}
+      {currentView === 'journal' && <Journal initialDate={selectedDate} />}
       {currentView === 'wellness' && <Wellness />}
-      {currentView === 'planner' && <Planner />}
+      {currentView === 'planner' && <Planner initialDate={selectedDate} />}
       {currentView === 'hobbies' && <Hobbies />}
       {currentView === 'insights' && <Insights />}
       {currentView === 'links' && <SavedLinks />}
@@ -67,7 +73,7 @@ function AppContent() {
       {currentView === 'achievements' && <Achievements />}
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'notes' && <Notes />}
-      {currentView === 'mooddiary' && <MoodDiary />}
+      {currentView === 'mooddiary' && <MoodDiary initialDate={selectedDate} />}
       {currentView === 'wallet' && <Wallet />}
       {currentView === 'memories' && <Memories />}
       {currentView === 'books' && <Books />}
