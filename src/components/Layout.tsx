@@ -27,7 +27,9 @@ import {
   Wallet,
   Camera,
   Book,
-  Users
+  Users,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -98,8 +100,21 @@ const navigationCategories = [
 
 export default function Layout({ children, currentView, onViewChange }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Overview', 'Health & Wellness']));
   const { signOut } = useAuth();
   const { accentColor } = useTheme();
+
+  const toggleSection = (sectionName: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(sectionName)) {
+        next.delete(sectionName);
+      } else {
+        next.add(sectionName);
+      }
+      return next;
+    });
+  };
 
   const getColorClasses = (type: 'bg' | 'text' | 'hover' | 'gradient' | 'light' | 'border') => {
     const colorMap: Record<string, Record<string, string>> = {
@@ -226,34 +241,47 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
               <Home className="h-6 w-6 mr-3" />
               Home
             </button>
-            <div className="space-y-6">
-            {navigationCategories.map((category) => (
-              <div key={category.name}>
-                <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2">
-                  {category.name}
-                </h3>
-                <div className="space-y-1">
-                  {category.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = currentView === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => onViewChange(item.id)}
-                        className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          isActive
-                            ? `${getColorClasses('bg')} text-white shadow-md`
-                            : `text-slate-600 ${getColorClasses('hover')} ${getColorClasses('text')}`
-                        }`}
-                      >
-                        <Icon className="h-5 w-5 mr-3" />
-                        {item.name}
-                      </button>
-                    );
-                  })}
+            <div className="space-y-2">
+            {navigationCategories.map((category) => {
+              const isExpanded = expandedSections.has(category.name);
+              return (
+                <div key={category.name}>
+                  <button
+                    onClick={() => toggleSection(category.name)}
+                    className="w-full flex items-center justify-between px-2 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 uppercase tracking-wider"
+                  >
+                    <span>{category.name}</span>
+                    {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      isExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="space-y-1 pl-2">
+                      {category.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = currentView === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => onViewChange(item.id)}
+                            className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                              isActive
+                                ? `${getColorClasses('bg')} text-white shadow-md`
+                                : `text-slate-600 ${getColorClasses('hover')}`
+                            }`}
+                          >
+                            <Icon className="h-5 w-5 mr-3" />
+                            {item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             </div>
           </div>
 
