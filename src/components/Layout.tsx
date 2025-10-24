@@ -299,11 +299,8 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
                     <span>{category.name}</span>
                     {isExpanded ? <ChevronDown className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
                   </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      isExpanded ? 'max-h-[5000px] opacity-100 mt-2 mb-3' : 'max-h-0 opacity-0'
-                    }`}
-                  >
+                  {isExpanded && (
+                    <div className="mt-2 mb-3">
                     <div className="space-y-2 pl-1">
                       {category.items.map((item) => {
                         const Icon = item.icon;
@@ -324,7 +321,8 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
                         );
                       })}
                     </div>
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
