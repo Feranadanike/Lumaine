@@ -235,45 +235,30 @@ export default function Profile() {
 
     setIsDeleting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
+      if (!user) {
         alert('Session expired. Please log in again.');
         setIsDeleting(false);
         return;
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`;
+      console.log('Soft deleting account...');
 
-      console.log('Calling delete-account function...');
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({
+          deleted_at: new Date().toISOString(),
+          status: 'deleted'
+        })
+        .eq('id', user.id);
 
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-      });
-
-      console.log('Response status:', response.status);
-
-      const result = await response.json();
-      console.log('Response data:', result);
-
-      if (!response.ok) {
-        console.error('Delete account error:', result);
-        alert(`Failed to delete account: ${result.error || 'Unknown error'}\nDetails: ${result.details || 'No details available'}`);
+      if (updateError) {
+        console.error('Error marking account as deleted:', updateError);
+        alert(`Failed to delete account: ${updateError.message}`);
         setIsDeleting(false);
         return;
       }
 
-      if (!result.success) {
-        console.error('Delete account failed:', result);
-        alert(`Failed to delete account: ${result.error || 'Unknown error'}\nDetails: ${result.details || 'No details'}`);
-        setIsDeleting(false);
-        return;
-      }
+      console.log('Account marked as deleted successfully');
 
       setShowDeleteConfirm(false);
       setDeleteConfirmText('');
