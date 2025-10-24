@@ -104,7 +104,7 @@ const navigationCategories = [
 
 export default function Layout({ children, currentView, onViewChange, onSearchOpen }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Overview', 'Health & Wellness']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Overview', 'Health & Wellness', 'Productivity', 'Personal', 'Finance', 'AI & Profile']));
   const { signOut } = useAuth();
   const { accentColor, darkMode, toggleDarkMode } = useTheme();
 
@@ -266,7 +266,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 min-h-0" style={{ scrollbarGutter: 'stable' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 pb-32 min-h-0" style={{ scrollbarGutter: 'stable' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-4 ${
