@@ -185,6 +185,8 @@ export interface PlanTask {
   time_slot?: string;
   completed: boolean;
   category?: string;
+  urgency_level?: number;
+  notes?: string;
 }
 
 export interface WeeklyPlan {

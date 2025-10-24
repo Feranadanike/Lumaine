@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Calendar, Check, Briefcase, Heart, Activity, Home, Sparkles } from 'lucide-react';
+import { Plus, X, Calendar, Check, Briefcase, Heart, Activity, Home, Sparkles, AlertCircle, AlertTriangle, AlertOctagon, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { DailyPlan, PlanTask } from '../types';
@@ -17,6 +17,8 @@ export default function Planner() {
     title: '',
     time_slot: '',
     category: '',
+    urgency_level: 2,
+    notes: '',
   });
 
   useEffect(() => {
@@ -52,6 +54,8 @@ export default function Planner() {
       title: newTask.title,
       time_slot: newTask.time_slot || undefined,
       category: newTask.category || undefined,
+      urgency_level: newTask.urgency_level,
+      notes: newTask.notes || undefined,
       completed: false,
     };
 
@@ -84,7 +88,7 @@ export default function Planner() {
         setDailyPlan(data);
       }
 
-      setNewTask({ title: '', time_slot: '', category: '' });
+      setNewTask({ title: '', time_slot: '', category: '', urgency_level: 2, notes: '' });
       setShowTaskForm(false);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
@@ -179,7 +183,12 @@ export default function Planner() {
                   <p className="text-slate-500">No tasks for this day. Add your first task!</p>
                 </div>
               ) : (
-                dailyPlan.tasks.map((task) => {
+                [...dailyPlan.tasks]
+                  .sort((a, b) => {
+                    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                    return (b.urgency_level || 0) - (a.urgency_level || 0);
+                  })
+                  .map((task) => {
                   const getCategoryColor = (category?: string) => {
                     switch (category) {
                       case 'Work': return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: Briefcase };
@@ -191,6 +200,23 @@ export default function Planner() {
                   };
                   const categoryStyle = getCategoryColor(task.category);
                   const CategoryIcon = categoryStyle.icon;
+
+                  const getUrgencyStyle = (urgency?: number) => {
+                    switch (urgency) {
+                      case 4:
+                        return { icon: Zap, color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-300', label: 'Urgent' };
+                      case 3:
+                        return { icon: AlertOctagon, color: 'text-orange-600', bg: 'bg-orange-100', border: 'border-orange-300', label: 'High' };
+                      case 2:
+                        return { icon: AlertTriangle, color: 'text-yellow-600', bg: 'bg-yellow-100', border: 'border-yellow-300', label: 'Medium' };
+                      case 1:
+                        return { icon: AlertCircle, color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-300', label: 'Low' };
+                      default:
+                        return { icon: AlertCircle, color: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-300', label: 'Normal' };
+                    }
+                  };
+                  const urgencyStyle = getUrgencyStyle(task.urgency_level);
+                  const UrgencyIcon = urgencyStyle.icon;
 
                   return (
                     <div
@@ -213,13 +239,24 @@ export default function Planner() {
                           {task.completed && <Check className="h-4 w-4 text-white" />}
                         </button>
                         <div className="flex-1">
-                          <p
-                            className={`font-medium ${
-                              task.completed ? 'text-slate-400 line-through' : 'text-slate-900'
-                            }`}
-                          >
-                            {task.title}
-                          </p>
+                          <div className="flex items-start justify-between gap-2">
+                            <p
+                              className={`font-medium flex-1 ${
+                                task.completed ? 'text-slate-400 line-through' : 'text-slate-900'
+                              }`}
+                            >
+                              {task.title}
+                            </p>
+                            {task.urgency_level && task.urgency_level > 0 && (
+                              <span className={`text-xs ${urgencyStyle.color} ${urgencyStyle.bg} px-2 py-1 rounded flex items-center gap-1 font-semibold`}>
+                                <UrgencyIcon className="h-3 w-3" />
+                                {urgencyStyle.label}
+                              </span>
+                            )}
+                          </div>
+                          {task.notes && (
+                            <p className="text-xs text-slate-500 mt-1 italic">{task.notes}</p>
+                          )}
                           <div className="flex gap-2 mt-1">
                             {task.time_slot && (
                               <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
@@ -294,6 +331,44 @@ export default function Planner() {
                   className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent"
                 />
                 <p className="text-xs text-slate-500 mt-2">When do you plan to do this?</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Urgency Level</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { level: 1, label: 'Low', icon: AlertCircle, color: 'bg-blue-50 border-blue-400 text-blue-700' },
+                    { level: 2, label: 'Medium', icon: AlertTriangle, color: 'bg-yellow-50 border-yellow-400 text-yellow-700' },
+                    { level: 3, label: 'High', icon: AlertOctagon, color: 'bg-orange-50 border-orange-400 text-orange-700' },
+                    { level: 4, label: 'Urgent', icon: Zap, color: 'bg-red-50 border-red-400 text-red-700' },
+                  ].map((urgency) => {
+                    const Icon = urgency.icon;
+                    const isSelected = newTask.urgency_level === urgency.level;
+                    return (
+                      <button
+                        key={urgency.level}
+                        type="button"
+                        onClick={() => setNewTask({ ...newTask, urgency_level: urgency.level })}
+                        className={`flex flex-col items-center gap-1 px-2 py-2 rounded-lg border-2 transition-all ${
+                          isSelected ? urgency.color : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        <span className="font-medium text-xs">{urgency.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-slate-500 mt-2">How urgent is this task?</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Notes (optional)</label>
+                <textarea
+                  value={newTask.notes}
+                  onChange={(e) => setNewTask({ ...newTask, notes: e.target.value })}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none"
+                  rows={2}
+                  placeholder="Add any additional notes or details..."
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Category (optional)</label>
