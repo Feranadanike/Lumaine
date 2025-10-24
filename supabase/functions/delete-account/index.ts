@@ -47,58 +47,23 @@ Deno.serve(async (req: Request) => {
     }
 
     const userId = user.id;
-    console.log(`Deleting account for user: ${userId}`);
+    console.log(`Soft deleting account for user: ${userId}`);
 
-    const tables = [
-      'daily_activities',
-      'user_achievements',
-      'meditation_sessions',
-      'sleep_logs',
-      'water_intake',
-      'planned_workouts',
-      'planned_skincare_routines',
-      'skincare_routine_schedules',
-      'savings_transactions',
-      'hobby_logs',
-      'workout_sessions',
-      'skincare_logs',
-      'skincare_products',
-      'journal_entries',
-      'daily_achievements',
-      'weekly_reflections',
-      'hobbies',
-      'daily_planner',
-      'weekly_planner',
-      'monthly_planner',
-      'yearly_goals',
-      'reminders',
-      'goals',
-      'savings_goals',
-      'saved_links',
-      'entertainment_items',
-    ];
+    // Mark user profile as deleted
+    const { error: profileError } = await supabaseAdmin
+      .from('user_profiles')
+      .update({ 
+        deleted_at: new Date().toISOString(),
+        status: 'deleted'
+      })
+      .eq('id', userId);
 
-    for (const table of tables) {
-      try {
-        await supabaseAdmin.from(table).delete().eq('user_id', userId);
-      } catch (e) {
-        console.error(`Error deleting from ${table}:`, e);
-      }
-    }
-
-    try {
-      await supabaseAdmin.from('user_profiles').delete().eq('id', userId);
-    } catch (e) {
-      console.error('Error deleting user_profiles:', e);
-    }
-
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(userId);
-
-    if (deleteAuthError) {
+    if (profileError) {
+      console.error('Error updating user profile:', profileError);
       return new Response(
         JSON.stringify({
-          error: 'Failed to delete authentication account',
-          details: deleteAuthError.message
+          error: 'Failed to mark account as deleted',
+          details: profileError.message
         }),
         {
           status: 500,
@@ -107,8 +72,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Disable the auth user account (they cannot log in anymore)
+    const { error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      { ban_duration: '876000h' } // Ban for 100 years (effectively permanent)
+    );
+
+    if (updateAuthError) {
+      console.error('Error disabling auth account:', updateAuthError);
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to disable authentication account',
+          details: updateAuthError.message
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    console.log(`Account soft deleted successfully for user: ${userId}`);
+
     return new Response(
-      JSON.stringify({ success: true, message: 'Account deleted successfully' }),
+      JSON.stringify({ 
+        success: true, 
+        message: 'Account deleted successfully. Your data will be permanently removed in 30 days.' 
+      }),
       {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
