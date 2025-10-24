@@ -3,7 +3,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2.57.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
@@ -17,61 +17,37 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    console.log('Auth header present:', !!authHeader);
-    
     if (!authHeader) {
-      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Unauthorized', details: 'Missing authorization header' }),
         {
           status: 401,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
-    );
-
+    const token = authHeader.replace('Bearer ', '');
+    
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    console.log('Getting user from client...');
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
-      console.error('User verification failed:', userError?.message);
       return new Response(
         JSON.stringify({ error: 'Unauthorized', details: userError?.message || 'Invalid token' }),
         {
           status: 401,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
 
-    console.log(`Deleting account for user: ${user.id}`);
+    const userId = user.id;
+    console.log(`Deleting account for user: ${userId}`);
 
     const tables = [
       'daily_activities',
@@ -102,48 +78,23 @@ Deno.serve(async (req: Request) => {
       'entertainment_items',
     ];
 
-    console.log('Starting data deletion...');
     for (const table of tables) {
       try {
-        const { error } = await supabaseAdmin
-          .from(table)
-          .delete()
-          .eq('user_id', user.id);
-
-        if (error) {
-          console.error(`Error deleting from ${table}:`, error);
-        } else {
-          console.log(`Successfully deleted from ${table}`);
-        }
-      } catch (tableError) {
-        console.error(`Exception deleting from ${table}:`, tableError);
+        await supabaseAdmin.from(table).delete().eq('user_id', userId);
+      } catch (e) {
+        console.error(`Error deleting from ${table}:`, e);
       }
     }
 
-    console.log('Deleting user profile...');
     try {
-      const { error: profileError } = await supabaseAdmin
-        .from('user_profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) {
-        console.error('Error deleting user_profiles:', profileError);
-      } else {
-        console.log('Successfully deleted user_profiles');
-      }
-    } catch (profileException) {
-      console.error('Exception deleting user_profiles:', profileException);
+      await supabaseAdmin.from('user_profiles').delete().eq('id', userId);
+    } catch (e) {
+      console.error('Error deleting user_profiles:', e);
     }
 
-    console.log('Attempting to delete auth user...');
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
-      user.id,
-      true
-    );
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteAuthError) {
-      console.error('Error deleting auth user:', deleteAuthError);
       return new Response(
         JSON.stringify({
           error: 'Failed to delete authentication account',
@@ -151,24 +102,16 @@ Deno.serve(async (req: Request) => {
         }),
         {
           status: 500,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json',
-          },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
-
-    console.log('Account deleted successfully');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Account deleted successfully' }),
       {
         status: 200,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   } catch (error) {
@@ -177,10 +120,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: 'Internal server error', details: String(error) }),
       {
         status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }
