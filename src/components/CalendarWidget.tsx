@@ -85,6 +85,17 @@ export default function CalendarWidget({ onDateAction }: CalendarWidgetProps) {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (selectedDate) {
+      setTimeout(() => {
+        const actionsSection = document.getElementById('calendar-actions');
+        if (actionsSection) {
+          actionsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 100);
+    }
+  }, [selectedDate]);
+
   const fetchTodayActivityCount = async () => {
     if (!user) return;
 
@@ -352,8 +363,8 @@ export default function CalendarWidget({ onDateAction }: CalendarWidgetProps) {
 
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className={`relative overflow-hidden bg-gradient-to-br ${getColorClasses('from')} ${getColorClasses('to')} p-8`}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-300">
+            <div className={`sticky top-0 z-10 relative overflow-hidden bg-gradient-to-br ${getColorClasses('from')} ${getColorClasses('to')} p-8 rounded-t-3xl`}>
               <div className="absolute inset-0 bg-white opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/20 via-transparent to-transparent"></div>
               <div className="relative flex items-center justify-between">
                 <div>
@@ -374,7 +385,7 @@ export default function CalendarWidget({ onDateAction }: CalendarWidgetProps) {
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 pb-8">
               <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={handlePreviousMonth}
@@ -450,7 +461,7 @@ export default function CalendarWidget({ onDateAction }: CalendarWidgetProps) {
               </div>
 
               {selectedDate && (
-                <div className="mt-8 animate-in slide-in-from-bottom duration-500">
+                <div id="calendar-actions" className="mt-8 animate-in slide-in-from-bottom duration-500">
                   <h3 className={`text-lg font-bold bg-gradient-to-r ${getColorClasses('from')} ${getColorClasses('to')} bg-clip-text text-transparent mb-4`}>
                     What would you like to do on {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}?
                   </h3>
