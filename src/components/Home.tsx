@@ -524,7 +524,7 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
 
         {todayTasks.length > 0 && (
-          <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
+          <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
             <div className="flex items-center justify-between mb-5">
               <h2 className={`text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2`}>
                 <Clock className={`h-6 w-6 ${getColorClasses().text}`} />
