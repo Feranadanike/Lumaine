@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, TrendingUp, Award, Zap, Sparkles, X, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, Award, Sparkles, X, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -19,14 +19,6 @@ interface DailyActivity {
   types: string[];
 }
 
-interface WeeklyData {
-  week: string;
-  workouts: number;
-  skincare: number;
-  journal: number;
-  hobbies: number;
-}
-
 export default function Insights() {
   const { user } = useAuth();
   const [data, setData] = useState<InsightsData>({
@@ -43,7 +35,6 @@ export default function Insights() {
   const [aiSummary, setAiSummary] = useState<any>(null);
   const [generatingAI, setGeneratingAI] = useState(false);
   const [dailyActivities, setDailyActivities] = useState<DailyActivity[]>([]);
-  const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -161,53 +152,6 @@ export default function Insights() {
 
       const activities = Array.from(activityMap.values()).sort((a, b) => a.date.localeCompare(b.date));
       setDailyActivities(activities);
-
-      const weeklyMap = new Map<string, WeeklyData>();
-      const getWeekKey = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const startOfWeek = new Date(date);
-        const day = date.getDay();
-        const diff = day === 0 ? 6 : day - 1;
-        startOfWeek.setDate(date.getDate() - diff);
-        return startOfWeek.toISOString().split('T')[0];
-      };
-
-      (workouts.data || []).forEach((item: any) => {
-        const week = getWeekKey(item.workout_date);
-        if (!weeklyMap.has(week)) {
-          weeklyMap.set(week, { week, workouts: 0, skincare: 0, journal: 0, hobbies: 0 });
-        }
-        weeklyMap.get(week)!.workouts++;
-      });
-
-      (skincare.data || []).forEach((item: any) => {
-        const week = getWeekKey(item.log_date);
-        if (!weeklyMap.has(week)) {
-          weeklyMap.set(week, { week, workouts: 0, skincare: 0, journal: 0, hobbies: 0 });
-        }
-        weeklyMap.get(week)!.skincare++;
-      });
-
-      (journal.data || []).forEach((item: any) => {
-        const week = getWeekKey(item.entry_date);
-        if (!weeklyMap.has(week)) {
-          weeklyMap.set(week, { week, workouts: 0, skincare: 0, journal: 0, hobbies: 0 });
-        }
-        weeklyMap.get(week)!.journal++;
-      });
-
-      (hobbies.data || []).forEach((item: any) => {
-        const week = getWeekKey(item.log_date);
-        if (!weeklyMap.has(week)) {
-          weeklyMap.set(week, { week, workouts: 0, skincare: 0, journal: 0, hobbies: 0 });
-        }
-        weeklyMap.get(week)!.hobbies++;
-      });
-
-      const weekly = Array.from(weeklyMap.values())
-        .sort((a, b) => a.week.localeCompare(b.week))
-        .slice(-12);
-      setWeeklyData(weekly);
     } catch (error) {
       console.error('Error loading activity data:', error);
     }
@@ -254,51 +198,20 @@ export default function Insights() {
     return <div className="text-center py-8 text-slate-600">Loading...</div>;
   }
 
-  const stats = [
-    {
-      label: 'Workouts',
-      value: data.totalWorkouts,
-      icon: TrendingUp,
-      color: 'from-orange-500 to-red-500',
-      textColor: 'text-orange-600',
-    },
-    {
-      label: 'Journal Entries',
-      value: data.totalJournalEntries,
-      icon: Award,
-      color: 'from-purple-500 to-pink-500',
-      textColor: 'text-purple-600',
-    },
-    {
-      label: 'Skincare Routines',
-      value: data.totalSkincareRoutines,
-      icon: Zap,
-      color: 'from-cyan-500 to-blue-500',
-      textColor: 'text-cyan-600',
-    },
-    {
-      label: 'Hobby Sessions',
-      value: data.totalHobbyLogs,
-      icon: Award,
-      color: 'from-rose-500 to-pink-500',
-      textColor: 'text-rose-600',
-    },
-  ];
-
   return (
-    <div className="space-y-8">
-      <div className="flex items-start justify-between">
+    <div className="space-y-6 md:space-y-8 pb-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-blue-500" />
             Insights
           </h1>
-          <p className="text-slate-600 mt-1">Your progress over the last 30 days</p>
+          <p className="text-slate-600 mt-1">Deep dive into your wellness patterns</p>
         </div>
         <button
           onClick={handleGenerateWeeklySummary}
           disabled={generatingAI}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-400 to-purple-400 text-white px-6 py-3 rounded-lg hover:from-blue-500 hover:to-purple-500 transition-colors shadow-lg disabled:opacity-50"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-400 to-purple-400 text-white px-6 py-3 rounded-lg hover:from-blue-500 hover:to-purple-500 transition-colors shadow-lg disabled:opacity-50"
         >
           <Sparkles className="h-5 w-5" />
           {generatingAI ? 'Generating...' : 'AI Weekly Summary'}
@@ -323,97 +236,56 @@ export default function Insights() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className="bg-white rounded-2xl shadow-lg p-6">
-              <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${stat.color} mb-4`}>
-                <Icon className="h-6 w-6 text-white" />
-              </div>
-              <p className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</p>
-              <p className="text-sm text-slate-600">{stat.label}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl shadow-lg p-6 md:p-8 border-2 border-purple-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-white rounded-xl shadow-md">
+              <Sparkles className="h-6 w-6 text-purple-500" />
             </div>
-          );
-        })}
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Average Mood</h2>
-          <div className="flex items-center gap-4">
-            <div className="text-5xl font-bold text-slate-900">{data.averageMood.toFixed(1)}</div>
-            <div className="text-slate-600">
-              <p className="text-sm">out of 5.0</p>
-              <p className="text-xs mt-1">
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">Mood Tracker</h2>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-5xl md:text-6xl font-bold text-purple-600">{data.averageMood.toFixed(1)}</div>
+            <div className="text-slate-700">
+              <p className="text-base font-medium">out of 5.0</p>
+              <p className="text-sm mt-2 font-semibold">
                 {data.averageMood >= 4
-                  ? 'Feeling great!'
+                  ? '🌟 Feeling great!'
                   : data.averageMood >= 3
-                  ? 'Doing well'
-                  : 'Keep going!'}
+                  ? '😊 Doing well'
+                  : '💪 Keep going!'}
               </p>
+              <p className="text-xs mt-1 text-slate-600">Last 30 days average</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">Total Savings</h2>
-          <div className="flex items-center gap-4">
-            <div className="text-5xl font-bold text-green-600">${data.savingsTotal.toFixed(0)}</div>
-            <div className="text-slate-600">
-              <p className="text-sm">across all goals</p>
-              <p className="text-xs mt-1">Keep saving!</p>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg p-6 md:p-8 border-2 border-green-200">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-white rounded-xl shadow-md">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+            </div>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">Total Savings</h2>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-5xl md:text-6xl font-bold text-green-600">${data.savingsTotal.toFixed(0)}</div>
+            <div className="text-slate-700">
+              <p className="text-base font-medium">across all goals</p>
+              <p className="text-sm mt-2 font-semibold">💰 Keep saving!</p>
+              <p className="text-xs mt-1 text-slate-600">Your financial progress</p>
             </div>
           </div>
         </div>
       </div>
-
-      {weeklyData.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-6">Weekly Activity Trends</h2>
-          <div className="space-y-4">
-            {weeklyData.map((week, index) => {
-              const maxValue = Math.max(
-                ...weeklyData.map(w => w.workouts + w.skincare + w.journal + w.hobbies)
-              );
-              const total = week.workouts + week.skincare + week.journal + week.hobbies;
-              const percentage = (total / maxValue) * 100;
-              const weekDate = new Date(week.week);
-              const weekLabel = weekDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-              return (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-700">Week of {weekLabel}</span>
-                    <span className="text-slate-600">{total} activities</span>
-                  </div>
-                  <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden">
-                    <div
-                      className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-400 to-pink-400 transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                    <div className="absolute inset-0 flex items-center px-3 text-xs font-medium text-slate-700">
-                      {week.workouts > 0 && <span className="mr-3">💪 {week.workouts}</span>}
-                      {week.skincare > 0 && <span className="mr-3">✨ {week.skincare}</span>}
-                      {week.journal > 0 && <span className="mr-3">📝 {week.journal}</span>}
-                      {week.hobbies > 0 && <span className="mr-3">🎨 {week.hobbies}</span>}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {dailyActivities.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-6">
             <Calendar className="h-6 w-6 text-blue-500" />
-            <h2 className="text-xl font-bold text-slate-900">Activity Heat Map</h2>
-            <span className="text-sm text-slate-500 ml-auto">Last 90 days</span>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">Activity Heat Map</h2>
+            <span className="text-sm text-slate-500 sm:ml-auto">Last 90 days</span>
           </div>
-          <div className="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-18 gap-1.5">
+          <div className="grid grid-cols-10 sm:grid-cols-15 md:grid-cols-18 lg:grid-cols-20 gap-1 md:gap-1.5">
             {Array.from({ length: 90 }, (_, i) => {
               const date = new Date();
               date.setDate(date.getDate() - (89 - i));
@@ -454,11 +326,18 @@ export default function Insights() {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-rose-400 to-pink-400 rounded-2xl shadow-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-2">You're doing amazing!</h2>
-        <p className="text-rose-50">
-          Keep up the great work tracking your journey. Consistency is key to reaching your goals.
-        </p>
+      <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl shadow-lg p-6 md:p-8 text-white">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-white/20 backdrop-blur rounded-xl">
+            <Award className="h-7 w-7 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold mb-2">Keep Growing!</h2>
+            <p className="text-blue-50 leading-relaxed">
+              The heat map shows your consistency journey. Each square represents your commitment to growth. Check Analytics for detailed breakdowns!
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
