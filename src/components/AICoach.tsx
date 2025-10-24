@@ -320,7 +320,7 @@ export default function AICoach() {
               <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="font-bold text-lg">Lumaine Coach</h2>
+              <h2 className="font-bold text-lg">LumiBud Coach</h2>
               <p className="text-sm opacity-90">Always here to help</p>
             </div>
           </div>
