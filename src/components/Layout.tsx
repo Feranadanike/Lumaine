@@ -163,7 +163,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
 
         {mobileMenuOpen && (
           <div className="border-t border-slate-200 bg-white shadow-lg">
-            <div className="px-4 pt-4 pb-3 space-y-6 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="px-4 pt-4 pb-3 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
               <button
                 onClick={() => {
                   onViewChange('home');
@@ -178,36 +178,49 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                 <Home className="h-6 w-6 mr-3" />
                 Home
               </button>
-              {navigationCategories.map((category) => (
-                <div key={category.name}>
-                  <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                    {category.name}
-                  </h3>
-                  <div className="space-y-1">
-                    {category.items.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = currentView === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => {
-                            onViewChange(item.id);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
-                            isActive
-                              ? `${getColorClasses('bg')} text-white shadow-md`
-                              : `text-slate-600 ${getColorClasses('hover')} ${getColorClasses('text')}`
-                          }`}
-                        >
-                          <Icon className="h-6 w-6 mr-3" />
-                          {item.name}
-                        </button>
-                      );
-                    })}
+              {navigationCategories.map((category) => {
+                const isExpanded = expandedSections.has(category.name);
+                return (
+                  <div key={category.name}>
+                    <button
+                      onClick={() => toggleSection(category.name)}
+                      className="w-full flex items-center justify-between px-2 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 uppercase tracking-wider"
+                    >
+                      <span>{category.name}</span>
+                      {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        isExpanded ? 'max-h-96 opacity-100 mt-2' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="space-y-1 pl-2">
+                        {category.items.map((item) => {
+                          const Icon = item.icon;
+                          const isActive = currentView === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                onViewChange(item.id);
+                                setMobileMenuOpen(false);
+                              }}
+                              className={`w-full flex items-center px-4 py-3 rounded-lg text-base font-medium transition-all duration-200 ${
+                                isActive
+                                  ? `${getColorClasses('bg')} text-white shadow-md`
+                                  : `text-slate-600 ${getColorClasses('hover')}`
+                              }`}
+                            >
+                              <Icon className="h-6 w-6 mr-3" />
+                              {item.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className="pt-4 border-t border-slate-200">
                 <button
                   onClick={handleSignOut}
