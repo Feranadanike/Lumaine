@@ -27,6 +27,7 @@ import Wallet from './components/Wallet';
 import Memories from './components/Memories';
 import Books from './components/Books';
 import Relationships from './components/Relationships';
+import Routines from './components/Routines';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -78,6 +79,7 @@ function AppContent() {
         onSearchOpen={() => setSearchOpen(true)}
       >
       {currentView === 'home' && <Home onViewChange={(view) => handleViewChange(view)} />}
+      {currentView === 'routines' && <Routines />}
       {currentView === 'profile' && <Profile />}
       {currentView === 'coach' && <AICoach />}
       {currentView === 'goals' && <Goals initialDate={selectedDate} />}

@@ -32,7 +32,8 @@ import {
   ChevronRight,
   Search,
   Moon,
-  Sun
+  Sun,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -67,6 +68,7 @@ const navigationCategories = [
   {
     name: 'Productivity',
     items: [
+      { id: 'routines', name: 'Routines', icon: Zap },
       { id: 'planner', name: 'Planner', icon: Calendar },
       { id: 'journal', name: 'Journal', icon: BookOpen },
       { id: 'mooddiary', name: 'Mood Diary', icon: Heart },

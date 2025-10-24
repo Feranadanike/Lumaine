@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Droplet, Dumbbell, PiggyBank, BookOpen, Heart, TrendingUp, Sparkles, Target, Clock, CheckCircle2, Circle, Lightbulb, Quote } from 'lucide-react';
+import { Droplet, Dumbbell, PiggyBank, BookOpen, Heart, TrendingUp, Sparkles, Target, Clock, CheckCircle2, Circle, Lightbulb, Quote, Zap, Play } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -53,12 +53,15 @@ export default function Home({ onViewChange }: HomeProps) {
   const [userName, setUserName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [todayTasks, setTodayTasks] = useState<TodayTask[]>([]);
+  const [routines, setRoutines] = useState<any[]>([]);
+  const [runningRoutine, setRunningRoutine] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       loadStats();
       loadUserProfile();
       loadTodayTasks();
+      loadRoutines();
     }
   }, [user]);
 
@@ -76,6 +79,27 @@ export default function Home({ onViewChange }: HomeProps) {
     } catch (error) {
       console.error('Error loading profile:', error);
     }
+  };
+
+  const loadRoutines = async () => {
+    try {
+      const { data } = await supabase
+        .from('routines')
+        .select('*, routine_actions!inner(*)')
+        .eq('user_id', user?.id)
+        .eq('enabled', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      setRoutines(data || []);
+    } catch (error) {
+      console.error('Error loading routines:', error);
+    }
+  };
+
+  const runRoutine = async (routine: any) => {
+    setRunningRoutine(routine.id);
+    setTimeout(() => setRunningRoutine(null), 2000);
   };
 
   const loadTodayTasks = async () => {
@@ -481,6 +505,60 @@ export default function Home({ onViewChange }: HomeProps) {
           )}
         </div>
       </div>
+
+      {routines.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900 dark:via-cyan-900 dark:to-teal-900 rounded-2xl shadow-lg p-6 border-2 border-blue-200 dark:border-blue-700">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Zap className="h-6 w-6 text-blue-500" />
+              Quick Routines
+            </h2>
+            <button
+              onClick={() => onViewChange('routines')}
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Manage
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {routines.map((routine) => (
+              <button
+                key={routine.id}
+                onClick={() => runRoutine(routine)}
+                disabled={runningRoutine === routine.id}
+                className="bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-700 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all group disabled:opacity-50"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg group-hover:scale-110 transition-transform">
+                    <Zap className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold text-slate-900 dark:text-white text-left">
+                    {routine.name}
+                  </h3>
+                </div>
+                {routine.description && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400 text-left mb-3">
+                    {routine.description}
+                  </p>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {routine.routine_actions?.length || 0} actions
+                  </span>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                    {runningRoutine === routine.id ? (
+                      <CheckCircle2 className="w-3 h-3" />
+                    ) : (
+                      <Play className="w-3 h-3" />
+                    )}
+                    {runningRoutine === routine.id ? 'Running' : 'Run'}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {todayTasks.length > 0 && (
