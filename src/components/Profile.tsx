@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2, Edit2, Check, X, Coins } from 'lucide-react';
-import { CURRENCIES, getCurrencySymbol } from '../lib/currency';
+import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2, Edit2, Check, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -36,7 +35,6 @@ export default function Profile() {
   const { accentColor, font, updateTheme } = useTheme();
   const [selectedColor, setSelectedColor] = useState('purple');
   const [selectedFont, setSelectedFont] = useState('sans');
-  const [selectedCurrency, setSelectedCurrency] = useState('GBP');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState<Achievement[]>([]);
@@ -56,10 +54,7 @@ export default function Profile() {
   useEffect(() => {
     setSelectedColor(accentColor);
     setSelectedFont(font);
-    if (profile?.currency) {
-      setSelectedCurrency(profile.currency);
-    }
-  }, [accentColor, font, profile?.currency]);
+  }, [accentColor, font]);
 
   const loadProfileData = async () => {
     try {
@@ -254,23 +249,6 @@ export default function Profile() {
     } catch (error) {
       console.error('Error updating username:', error);
       alert('Failed to update username');
-    }
-  };
-
-  const handleUpdateCurrency = async () => {
-    try {
-      const { error } = await supabase
-        .from('user_profiles')
-        .update({ currency: selectedCurrency })
-        .eq('id', user?.id);
-
-      if (error) throw error;
-
-      setProfile(prev => prev ? { ...prev, currency: selectedCurrency } : null);
-      alert('Currency updated successfully!');
-    } catch (error) {
-      console.error('Error updating currency:', error);
-      alert('Failed to update currency');
     }
   };
 
@@ -666,49 +644,6 @@ export default function Profile() {
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-              <Coins className="h-5 w-5 text-emerald-600" />
-              Currency
-            </h4>
-            <p className="text-sm text-slate-600 mb-4">
-              Choose your preferred currency for financial tracking
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {CURRENCIES.map((currency) => (
-                <button
-                  key={currency.code}
-                  onClick={() => setSelectedCurrency(currency.code)}
-                  className={`relative p-4 rounded-xl border-2 transition-all text-left ${
-                    selectedCurrency === currency.code
-                      ? 'border-emerald-500 bg-emerald-50 shadow-md'
-                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="text-2xl font-bold text-slate-900 mb-1">{currency.symbol}</div>
-                  <p className="text-sm font-semibold text-slate-900">{currency.code}</p>
-                  <p className="text-xs text-slate-600">{currency.name}</p>
-                  {selectedCurrency === currency.code && (
-                    <div className="absolute top-2 right-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-white" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={handleUpdateCurrency}
-              disabled={selectedCurrency === profile?.currency}
-              className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl font-semibold transition-all ${
-                selectedCurrency === profile?.currency
-                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
-              }`}
-            >
-              {selectedCurrency === profile?.currency ? 'Currency Applied' : 'Apply Currency'}
-            </button>
           </div>
 
           <div className="pt-4 border-t border-slate-200">
