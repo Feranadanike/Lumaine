@@ -27,7 +27,8 @@ export default function Entertainment() {
     title: '',
     type: 'Movie' as typeof TYPES[number],
     where_to_find: '',
-    notes: ''
+    notes: '',
+    playlist: ''
   });
 
   useEffect(() => {
@@ -61,7 +62,8 @@ export default function Entertainment() {
       title: formData.title,
       type: formData.type,
       where_to_find: formData.where_to_find || null,
-      notes: formData.notes || null
+      notes: formData.notes || null,
+      playlist: formData.playlist || null
     };
 
     try {
@@ -84,7 +86,8 @@ export default function Entertainment() {
         title: '',
         type: 'Movie',
         where_to_find: '',
-        notes: ''
+        notes: '',
+        playlist: ''
       });
       setShowForm(false);
       setEditingItem(null);
@@ -100,7 +103,8 @@ export default function Entertainment() {
       title: item.title,
       type: item.type,
       where_to_find: item.where_to_find || '',
-      notes: item.notes || ''
+      notes: item.notes || '',
+      playlist: item.playlist || ''
     });
     setShowForm(true);
   };
@@ -128,7 +132,8 @@ export default function Entertainment() {
       title: '',
       type: 'Movie',
       where_to_find: '',
-      notes: ''
+      notes: '',
+      playlist: ''
     });
   };
 
@@ -146,13 +151,31 @@ export default function Entertainment() {
     return searchQuery === '' ||
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.where_to_find?.toLowerCase().includes(searchQuery.toLowerCase());
+      item.where_to_find?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.playlist?.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
-  const itemsByType = TYPES.reduce((acc, type) => {
-    acc[type] = filteredItems.filter(item => item.type === type);
+  // Get unique playlists for autocomplete
+  const existingPlaylists = Array.from(new Set(
+    items.map(item => item.playlist).filter(Boolean)
+  )).sort();
+
+  // Group items by playlist
+  const itemsByPlaylist = filteredItems.reduce((acc, item) => {
+    const playlistName = item.playlist || 'Uncategorized';
+    if (!acc[playlistName]) {
+      acc[playlistName] = [];
+    }
+    acc[playlistName].push(item);
     return acc;
   }, {} as Record<string, EntertainmentItem[]>);
+
+  // Sort playlists: Uncategorized last, rest alphabetically
+  const sortedPlaylistNames = Object.keys(itemsByPlaylist).sort((a, b) => {
+    if (a === 'Uncategorized') return 1;
+    if (b === 'Uncategorized') return -1;
+    return a.localeCompare(b);
+  });
 
   if (loading) {
     return (
@@ -221,7 +244,26 @@ export default function Entertainment() {
                 </select>
               </div>
 
-              <div className="md:col-span-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Playlist (Optional)
+                </label>
+                <input
+                  type="text"
+                  list="playlists"
+                  value={formData.playlist}
+                  onChange={(e) => setFormData({ ...formData, playlist: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="Horror Romance, 90s Action..."
+                />
+                <datalist id="playlists">
+                  {existingPlaylists.map(playlist => (
+                    <option key={playlist} value={playlist} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Where to Find It
                 </label>
@@ -288,74 +330,90 @@ export default function Entertainment() {
         </div>
       ) : (
         <div className="space-y-4">
-          {TYPES.map((type) => {
-            const typeItems = itemsByType[type];
-            if (typeItems.length === 0) return null;
+          {sortedPlaylistNames.map((playlistName) => {
+            const playlistItems = itemsByPlaylist[playlistName];
+            if (playlistItems.length === 0) return null;
 
-            const isCollapsed = collapsedCategories.has(type);
-            const colors = TYPE_COLORS[type];
+            const isCollapsed = collapsedCategories.has(playlistName);
+            const isUncategorized = playlistName === 'Uncategorized';
 
             return (
-              <div key={type} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div key={playlistName} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <button
-                  onClick={() => toggleCategory(type)}
-                  className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${colors.bg}`}
+                  onClick={() => toggleCategory(playlistName)}
+                  className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
+                    isUncategorized ? 'bg-gray-50' : 'bg-gradient-to-r from-purple-50 to-pink-50'
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     {isCollapsed ? (
-                      <ChevronRight className={`w-5 h-5 ${colors.text}`} />
+                      <ChevronRight className="w-5 h-5 text-purple-600" />
                     ) : (
-                      <ChevronDown className={`w-5 h-5 ${colors.text}`} />
+                      <ChevronDown className="w-5 h-5 text-purple-600" />
                     )}
-                    <h2 className={`text-lg font-semibold ${colors.text}`}>{type}</h2>
-                    <span className={`px-2.5 py-1 rounded-full text-sm font-medium bg-white ${colors.text}`}>
-                      {typeItems.length}
+                    <h2 className={`text-lg font-semibold ${
+                      isUncategorized ? 'text-gray-700' : 'text-purple-700'
+                    }`}>
+                      {playlistName}
+                    </h2>
+                    <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${
+                      isUncategorized ? 'bg-gray-200 text-gray-700' : 'bg-white text-purple-700'
+                    }`}>
+                      {playlistItems.length}
                     </span>
                   </div>
                 </button>
 
                 {!isCollapsed && (
                   <div className="p-4 space-y-2">
-                    {typeItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`border-l-4 ${colors.border} bg-gray-50 rounded-r-lg p-4 hover:shadow-sm transition-all`}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 mb-1">
-                              {item.title}
-                            </h3>
-                            {item.where_to_find && (
-                              <p className="text-sm text-gray-600 mb-1">
-                                <span className="text-gray-500">On:</span> {item.where_to_find}
-                              </p>
-                            )}
-                            {item.notes && (
-                              <p className="text-sm text-gray-600 italic">
-                                {item.notes}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
-                              onClick={() => handleEdit(item)}
-                              className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                    {playlistItems.map((item) => {
+                      const colors = TYPE_COLORS[item.type];
+                      return (
+                        <div
+                          key={item.id}
+                          className={`border-l-4 ${colors.border} bg-gray-50 rounded-r-lg p-4 hover:shadow-sm transition-all`}
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-gray-900">
+                                  {item.title}
+                                </h3>
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${colors.bg} ${colors.text}`}>
+                                  {item.type}
+                                </span>
+                              </div>
+                              {item.where_to_find && (
+                                <p className="text-sm text-gray-600 mb-1">
+                                  <span className="text-gray-500">On:</span> {item.where_to_find}
+                                </p>
+                              )}
+                              {item.notes && (
+                                <p className="text-sm text-gray-600 italic">
+                                  {item.notes}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

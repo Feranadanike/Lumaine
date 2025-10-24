@@ -303,6 +303,7 @@ export interface EntertainmentItem {
   user_id: string;
   title: string;
   type: 'Book' | 'Movie' | 'TV Show' | 'Artist' | 'Podcast';
+  playlist?: string;
   where_to_find?: string;
   notes?: string;
   created_at: string;
