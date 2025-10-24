@@ -374,7 +374,7 @@ export default function Home({ onViewChange }: HomeProps) {
 
     return {
       icon: Heart,
-      title: 'Nice Start',
+      title: 'Keep Going',
       message: `You've been consistent with ${activeCategories.join(', ')}. Small steps lead to big changes—you're on the right path!`,
       color: 'from-pink-50 to-rose-50',
       borderColor: 'border-pink-200',
@@ -526,7 +526,7 @@ export default function Home({ onViewChange }: HomeProps) {
         {todayTasks.length > 0 && (
           <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className={`text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2`}>
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
                 <Clock className={`h-6 w-6 ${getColorClasses().text}`} />
                 Today's Tasks
               </h2>
