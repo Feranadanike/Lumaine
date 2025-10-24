@@ -256,11 +256,11 @@ export default function Relationships() {
   const getRelationshipIcon = (type: string) => {
     switch (type) {
       case 'partner':
-        return <Heart className="w-6 h-6 text-white" />;
+        return <Heart className="w-5 h-5 text-gray-500" />;
       case 'family':
-        return <Users className="w-6 h-6 text-white" />;
+        return <Users className="w-5 h-5 text-gray-500" />;
       default:
-        return <Users className="w-6 h-6 text-white" />;
+        return <Users className="w-5 h-5 text-gray-500" />;
     }
   };
 
@@ -534,49 +534,43 @@ export default function Relationships() {
           {relationships.map((person) => (
             <div
               key={person.id}
-              className="bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 rounded-xl shadow-sm border-2 border-pink-200 p-4 hover:shadow-lg hover:border-pink-300 transition-all"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-purple-400 flex items-center justify-center shadow-md flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
                   {getRelationshipIcon(person.relationship_type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 truncate">{person.name}</h3>
-                  <span className="text-xs px-2 py-1 bg-white/80 text-gray-700 rounded-full font-medium capitalize inline-block">
+                  <h3 className="font-semibold text-gray-900 truncate">{person.name}</h3>
+                  <span className="text-xs text-gray-600 capitalize">
                     {person.relationship_type}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2 mb-3 bg-white/60 rounded-lg p-2">
+              <div className="space-y-2 mb-3">
                 {person.birthday && (
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <Cake className="w-4 h-4 text-pink-500" />
-                    <span className="font-medium">
-                      {new Date(person.birthday).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Cake className="w-4 h-4" />
+                    {new Date(person.birthday).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </div>
                 )}
                 {person.anniversary_date && (
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <Heart className="w-4 h-4 text-red-500" />
-                    <span className="font-medium">
-                      {new Date(person.anniversary_date).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                      })}
-                    </span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Heart className="w-4 h-4" />
+                    {new Date(person.anniversary_date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
                   </div>
                 )}
                 {person.gift_ideas.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-gray-700">
-                    <Gift className="w-4 h-4 text-green-500" />
-                    <span className="font-medium">
-                      {person.gift_ideas.length} 🎁 {person.gift_ideas.length === 1 ? 'idea' : 'ideas'}
-                    </span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Gift className="w-4 h-4" />
+                    {person.gift_ideas.length} gift {person.gift_ideas.length === 1 ? 'idea' : 'ideas'}
                   </div>
                 )}
               </div>
@@ -584,15 +578,15 @@ export default function Relationships() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedPerson(person)}
-                  className="flex-1 px-3 py-2 bg-white text-pink-600 rounded-lg hover:bg-pink-100 transition-colors font-medium shadow-sm"
+                  className="flex-1 px-3 py-1.5 text-sm bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   View
                 </button>
                 <button
                   onClick={() => handleEdit(person)}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-white text-gray-600 rounded-lg hover:bg-gray-100 transition-colors shadow-sm"
+                  className="flex items-center justify-center px-3 py-1.5 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Edit2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

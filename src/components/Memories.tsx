@@ -413,49 +413,48 @@ export default function Memories() {
           {filteredMemories.map((memory) => (
             <div
               key={memory.id}
-              className="bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 rounded-xl shadow-sm border-2 border-cyan-200 overflow-hidden hover:shadow-lg hover:border-cyan-300 transition-all cursor-pointer group"
+              className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
               onClick={() => setSelectedMemory(memory)}
             >
-              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-100 relative">
+              <div className="aspect-[4/3] w-full overflow-hidden bg-gray-50">
                 <img
                   src={memory.photo_url}
                   alt={memory.title}
-                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/1591373/pexels-photo-1591373.jpeg';
                   }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <div className="p-4">
-                <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">{memory.title}</h3>
+                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-1">{memory.title}</h3>
                 {memory.description && (
-                  <p className="text-sm text-gray-700 mb-3 line-clamp-2 bg-white/60 rounded-lg p-2">{memory.description}</p>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{memory.description}</p>
                 )}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                    <Calendar className="w-4 h-4 text-cyan-600" />
-                    📅 {new Date(memory.memory_date).toLocaleDateString('en-US', {
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(memory.memory_date).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric'
                     })}
                   </div>
                   {memory.location && (
-                    <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                      <MapPin className="w-4 h-4 text-red-500" />
-                      📍 {memory.location}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      {memory.location}
                     </div>
                   )}
                   {memory.tags.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap mt-2">
                       {memory.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="text-xs px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full font-medium">
-                          #{tag}
+                        <span key={tag} className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                          {tag}
                         </span>
                       ))}
                       {memory.tags.length > 3 && (
-                        <span className="text-xs text-gray-500 font-medium">+{memory.tags.length - 3}</span>
+                        <span className="text-xs text-gray-500">+{memory.tags.length - 3}</span>
                       )}
                     </div>
                   )}
