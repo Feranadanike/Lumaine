@@ -18,6 +18,7 @@ Deno.serve(async (req: Request) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('Missing Authorization header');
       return new Response(
         JSON.stringify({ error: 'Unauthorized', details: 'Missing authorization header' }),
         {
@@ -28,17 +29,38 @@ Deno.serve(async (req: Request) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    
+    console.log('Token received, length:', token.length);
+
+    // Create admin client for auth verification
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     );
 
+    // Verify the user's token
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
-    if (userError || !user) {
+    if (userError) {
+      console.error('Error verifying user token:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message || 'Invalid token' }),
+        JSON.stringify({ error: 'Unauthorized', details: `Auth error: ${userError.message}` }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    if (!user) {
+      console.error('No user found from token');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized', details: 'Auth session missing!' }),
         {
           status: 401,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -47,6 +69,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const userId = user.id;
+    console.log('Authenticated user:', userId);
     console.log(`Soft deleting account for user: ${userId}`);
 
     // Mark user profile as deleted
