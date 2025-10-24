@@ -23,7 +23,10 @@ import {
   TrendingUp,
   FileText,
   ChefHat,
-  Wallet
+  Wallet,
+  Camera,
+  Book,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -64,6 +67,14 @@ const navigationCategories = [
       { id: 'hobbies', name: 'Hobbies', icon: Smile },
       { id: 'links', name: 'Saved Links', icon: Bookmark },
       { id: 'entertainment', name: 'Entertainment', icon: Film },
+    ]
+  },
+  {
+    name: 'Personal',
+    items: [
+      { id: 'memories', name: 'Memories', icon: Camera },
+      { id: 'books', name: 'Reading List', icon: Book },
+      { id: 'relationships', name: 'Relationships', icon: Users },
     ]
   },
   {

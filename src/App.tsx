@@ -23,6 +23,9 @@ import Notes from './components/Notes';
 import MealPrep from './components/MealPrep';
 import MoodDiary from './components/MoodDiary';
 import Wallet from './components/Wallet';
+import Memories from './components/Memories';
+import Books from './components/Books';
+import Relationships from './components/Relationships';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -66,6 +69,9 @@ function AppContent() {
       {currentView === 'notes' && <Notes />}
       {currentView === 'mooddiary' && <MoodDiary />}
       {currentView === 'wallet' && <Wallet />}
+      {currentView === 'memories' && <Memories />}
+      {currentView === 'books' && <Books />}
+      {currentView === 'relationships' && <Relationships />}
     </Layout>
   );
 }
