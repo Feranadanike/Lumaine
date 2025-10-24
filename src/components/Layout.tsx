@@ -245,13 +245,13 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
           <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 pb-4" style={{ scrollbarGutter: 'stable' }}>
             <button
               onClick={() => onViewChange('home')}
-              className={`w-full flex items-center px-5 py-4 rounded-2xl text-lg font-bold transition-all duration-200 mb-6 ${
+              className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-8 ${
                 currentView === 'home'
                   ? `bg-gradient-to-r ${getColorClasses('gradient')} text-white shadow-xl`
                   : `bg-gradient-to-r ${getColorClasses('light')} ${getColorClasses('text')} ${getColorClasses('hover')} shadow-md`
               }`}
             >
-              <Home className="h-7 w-7 mr-4" />
+              <Home className="h-9 w-9 mr-4" />
               Home
             </button>
             <div className="space-y-3">
@@ -261,10 +261,10 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                 <div key={category.name}>
                   <button
                     onClick={() => toggleSection(category.name)}
-                    className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-all duration-200 uppercase tracking-wide"
+                    className="w-full flex items-center justify-between px-4 py-4 rounded-xl text-base font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-all duration-200 uppercase tracking-wide"
                   >
                     <span>{category.name}</span>
-                    {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    {isExpanded ? <ChevronDown className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
@@ -279,13 +279,13 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                           <button
                             key={item.id}
                             onClick={() => onViewChange(item.id)}
-                            className={`w-full flex items-center px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 ${
+                            className={`w-full flex items-center px-5 py-4 rounded-xl text-lg font-bold transition-all duration-200 ${
                               isActive
                                 ? `${getColorClasses('bg')} text-white shadow-lg`
                                 : `text-slate-700 ${getColorClasses('hover')}`
                             }`}
                           >
-                            <Icon className="h-6 w-6 mr-3.5" />
+                            <Icon className="h-8 w-8 mr-4" />
                             {item.name}
                           </button>
                         );
@@ -301,9 +301,9 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
           <div className="p-5 border-t border-slate-200 flex-shrink-0">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="w-full flex items-center px-5 py-4 rounded-xl text-lg font-bold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <LogOut className="h-6 w-6 mr-3" />
+              <LogOut className="h-8 w-8 mr-4" />
               Sign Out
             </button>
           </div>
