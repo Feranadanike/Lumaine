@@ -506,96 +506,98 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
       </div>
 
-      <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-white shadow-md">
-            <Quote className="h-7 w-7 text-purple-500" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-amber-500" />
-              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today's Focus</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-white shadow-md">
+              <Quote className="h-7 w-7 text-purple-500" />
             </div>
-            <p className="text-lg font-medium text-slate-900 dark:text-white mb-2 italic">"{getDailyQuote().quote}"</p>
-            <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{getDailyQuote().focus}</p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Lightbulb className="h-5 w-5 text-amber-500" />
+                <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today's Focus</h3>
+              </div>
+              <p className="text-lg font-medium text-slate-900 dark:text-white mb-2 italic">"{getDailyQuote().quote}"</p>
+              <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{getDailyQuote().focus}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {todayTasks.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-blue-100 dark:border-blue-700">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Clock className="h-6 w-6 text-blue-500" />
-              Today's Tasks
-            </h2>
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              {todayTasks.filter(t => t.completed).length} of {todayTasks.length} completed
-            </span>
-          </div>
-          <div className="space-y-3">
-            {todayTasks.map((task) => {
-              const getTaskIcon = () => {
-                switch (task.type) {
-                  case 'skincare': return Droplet;
-                  case 'workout': return Dumbbell;
-                  case 'journal': return BookOpen;
-                  case 'hobby': return Heart;
-                  case 'goal': return Target;
-                  default: return Circle;
-                }
-              };
-              const TaskIcon = getTaskIcon();
-              const getTaskColor = () => {
-                switch (task.type) {
-                  case 'skincare': return 'text-pink-500 bg-pink-50 dark:bg-pink-900';
-                  case 'workout': return 'text-amber-500 bg-amber-50 dark:bg-amber-900';
-                  case 'journal': return 'text-purple-500 bg-purple-50 dark:bg-purple-900';
-                  case 'hobby': return 'text-rose-500 bg-rose-50 dark:bg-rose-900';
-                  case 'goal': return 'text-blue-500 bg-blue-50 dark:bg-blue-900';
-                  default: return 'text-slate-500 bg-slate-50 dark:bg-slate-700';
-                }
-              };
+        {todayTasks.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-blue-100 dark:border-blue-700">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Clock className="h-6 w-6 text-blue-500" />
+                Today's Tasks
+              </h2>
+              <span className="text-sm text-slate-600 dark:text-slate-400">
+                {todayTasks.filter(t => t.completed).length} of {todayTasks.length} completed
+              </span>
+            </div>
+            <div className="space-y-3">
+              {todayTasks.map((task) => {
+                const getTaskIcon = () => {
+                  switch (task.type) {
+                    case 'skincare': return Droplet;
+                    case 'workout': return Dumbbell;
+                    case 'journal': return BookOpen;
+                    case 'hobby': return Heart;
+                    case 'goal': return Target;
+                    default: return Circle;
+                  }
+                };
+                const TaskIcon = getTaskIcon();
+                const getTaskColor = () => {
+                  switch (task.type) {
+                    case 'skincare': return 'text-pink-500 bg-pink-50 dark:bg-pink-900';
+                    case 'workout': return 'text-amber-500 bg-amber-50 dark:bg-amber-900';
+                    case 'journal': return 'text-purple-500 bg-purple-50 dark:bg-purple-900';
+                    case 'hobby': return 'text-rose-500 bg-rose-50 dark:bg-rose-900';
+                    case 'goal': return 'text-blue-500 bg-blue-50 dark:bg-blue-900';
+                    default: return 'text-slate-500 bg-slate-50 dark:bg-slate-700';
+                  }
+                };
 
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => onViewChange(task.type)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
-                    task.completed
-                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 border-green-300 dark:border-green-700'
-                      : 'bg-gradient-to-r from-white to-slate-50 dark:from-gray-800 dark:to-gray-700 border-slate-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:scale-[1.02]'
-                  }`}
-                >
-                  <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
-                    <TaskIcon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`font-semibold transition-all duration-300 ${task.completed ? 'text-slate-600 dark:text-slate-400 line-through' : 'text-slate-900 dark:text-white'}`}>
-                        {task.title}
-                      </h3>
-                      {task.time && (
-                        <span className="text-xs bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-full">
-                          {task.time}
-                        </span>
+                return (
+                  <button
+                    key={task.id}
+                    onClick={() => onViewChange(task.type)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
+                      task.completed
+                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 border-green-300 dark:border-green-700'
+                        : 'bg-gradient-to-r from-white to-slate-50 dark:from-gray-800 dark:to-gray-700 border-slate-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:scale-[1.02]'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
+                      <TaskIcon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`font-semibold transition-all duration-300 ${task.completed ? 'text-slate-600 dark:text-slate-400 line-through' : 'text-slate-900 dark:text-white'}`}>
+                          {task.title}
+                        </h3>
+                        {task.time && (
+                          <span className="text-xs bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-full">
+                            {task.time}
+                          </span>
+                        )}
+                      </div>
+                      {task.details && (
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{task.details}</p>
                       )}
                     </div>
-                    {task.details && (
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{task.details}</p>
+                    {task.completed ? (
+                      <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                    ) : (
+                      <Circle className="h-6 w-6 text-slate-300 dark:text-slate-600 flex-shrink-0" />
                     )}
-                  </div>
-                  {task.completed ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
-                  ) : (
-                    <Circle className="h-6 w-6 text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                  )}
-                </button>
-              );
-            })}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {routines.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900 dark:via-cyan-900 dark:to-teal-900 rounded-2xl shadow-lg p-6 border-2 border-blue-200 dark:border-blue-700">
