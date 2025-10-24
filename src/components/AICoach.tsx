@@ -326,7 +326,7 @@ export default function AICoach() {
           </div>
         </div>
 
-        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-slate-50">
+        <div className="h-[600px] overflow-y-auto p-6 space-y-4 bg-slate-50">
           {messages.map((message, index) => (
             <div key={index} className="space-y-2">
               <div
@@ -338,13 +338,13 @@ export default function AICoach() {
                   </div>
                 )}
                 <div
-                  className={`max-w-md p-4 rounded-2xl ${
+                  className={`max-w-2xl p-4 rounded-2xl ${
                     message.role === 'user'
                       ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
                       : 'bg-white shadow-md text-slate-800'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-base whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   <p
                     className={`text-xs mt-2 ${
                       message.role === 'user' ? 'text-indigo-100' : 'text-slate-400'
