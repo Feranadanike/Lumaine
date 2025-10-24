@@ -21,7 +21,8 @@ import {
   Film,
   Trophy,
   TrendingUp,
-  FileText
+  FileText,
+  ChefHat
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -47,6 +48,7 @@ const navigationCategories = [
     items: [
       { id: 'skincare', name: 'Skincare', icon: Droplet },
       { id: 'gym', name: 'Gym', icon: Dumbbell },
+      { id: 'mealprep', name: 'Meal Prep', icon: ChefHat },
       { id: 'wellness', name: 'Wellness', icon: Heart },
     ]
   },

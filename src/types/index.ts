@@ -305,3 +305,58 @@ export interface EntertainmentItem {
   created_at: string;
   updated_at: string;
 }
+
+export interface Ingredient {
+  name: string;
+  amount: string;
+  unit: string;
+}
+
+export interface Recipe {
+  id: string;
+  user_id: string;
+  recipe_name: string;
+  description?: string;
+  ingredients: Ingredient[];
+  instructions: string;
+  prep_time_minutes?: number;
+  cook_time_minutes?: number;
+  servings: number;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fats?: number;
+  category: string;
+  tags?: string[];
+  created_at: string;
+}
+
+export interface MealPlan {
+  id: string;
+  user_id: string;
+  plan_date: string;
+  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  recipe_id?: string;
+  custom_meal_name?: string;
+  notes?: string;
+  created_at: string;
+  recipe?: Recipe;
+}
+
+export interface GroceryList {
+  id: string;
+  user_id: string;
+  list_name: string;
+  created_at: string;
+  is_completed: boolean;
+}
+
+export interface GroceryItem {
+  id: string;
+  grocery_list_id: string;
+  item_name: string;
+  amount?: string;
+  category?: string;
+  is_checked: boolean;
+  created_at: string;
+}

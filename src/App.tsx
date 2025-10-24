@@ -20,6 +20,7 @@ import Entertainment from './components/Entertainment';
 import Achievements from './components/Achievements';
 import Analytics from './components/Analytics';
 import Notes from './components/Notes';
+import MealPrep from './components/MealPrep';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ function AppContent() {
       {currentView === 'goals' && <Goals />}
       {currentView === 'skincare' && <Skincare />}
       {currentView === 'gym' && <Gym />}
+      {currentView === 'mealprep' && <MealPrep />}
       {currentView === 'savings' && <Finance defaultTab="savings" />}
       {currentView === 'bills' && <Finance defaultTab="bills" />}
       {currentView === 'subscriptions' && <Finance defaultTab="subscriptions" />}
