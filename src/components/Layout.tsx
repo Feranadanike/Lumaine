@@ -148,7 +148,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getColorClasses('light')} via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900`}>
+    <div className={`h-screen flex flex-col bg-gradient-to-br ${getColorClasses('light')} via-white to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900`}>
       <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 shadow-sm lg:hidden">
         <div className="px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
@@ -254,7 +254,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
         )}
       </nav>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-center">
@@ -343,8 +343,8 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
           </div>
         </aside>
 
-        <main className="flex-1 lg:pl-64">
-          <div className="min-h-screen">
+        <main className="flex-1 lg:pl-64 overflow-y-auto">
+          <div>
             <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="hidden lg:flex justify-between items-center mb-4">
                 <button
