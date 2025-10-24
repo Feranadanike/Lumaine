@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Heart, Calendar, TrendingUp } from 'lucide-react';
+import { Plus, X, Heart, Calendar, TrendingUp, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Hobby, HobbyLog } from '../types';
