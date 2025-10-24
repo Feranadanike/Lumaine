@@ -333,54 +333,6 @@ export default function Home({ onViewChange }: HomeProps) {
     }
   };
 
-  const getWeeklyReflection = () => {
-    const totalActivities = stats.skincareStreak + stats.workoutStreak + stats.journalStreak + stats.hobbyStreak;
-    const activeCategories = [
-      stats.skincareStreak > 0 && 'skincare',
-      stats.workoutStreak > 0 && 'workouts',
-      stats.journalStreak > 0 && 'journaling',
-      stats.hobbyStreak > 0 && 'hobbies',
-    ].filter(Boolean);
-
-    if (totalActivities === 0) {
-      return {
-        icon: Sparkles,
-        title: 'Fresh Start',
-        message: "It's a new week full of possibilities! Start with something simple today, and watch your momentum build.",
-        color: 'from-slate-50 to-blue-50',
-        borderColor: 'border-slate-200',
-      };
-    }
-
-    if (totalActivities >= 20) {
-      return {
-        icon: Target,
-        title: 'Outstanding Week!',
-        message: `Incredible consistency! You've been crushing it with ${activeCategories.join(', ')}. Keep this amazing energy going!`,
-        color: 'from-amber-50 to-orange-50',
-        borderColor: 'border-amber-200',
-      };
-    }
-
-    if (totalActivities >= 10) {
-      return {
-        icon: TrendingUp,
-        title: 'Great Progress',
-        message: `You're building solid habits with ${activeCategories.join(', ')}. Every streak is a step forward—keep it up!`,
-        color: 'from-green-50 to-emerald-50',
-        borderColor: 'border-green-200',
-      };
-    }
-
-    return {
-      icon: Heart,
-      title: 'Keep Going',
-      message: `You've been consistent with ${activeCategories.join(', ')}. Small steps lead to big changes—you're on the right path!`,
-      color: 'from-pink-50 to-rose-50',
-      borderColor: 'border-pink-200',
-    };
-  };
-
   const getDailyQuote = () => {
     const quotes = [
       { quote: "Progress, not perfection. Every small step counts.", focus: "Be kind to yourself today" },
@@ -518,7 +470,7 @@ export default function Home({ onViewChange }: HomeProps) {
                 <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today's Focus</h3>
               </div>
               <p className="text-lg font-medium text-slate-900 dark:text-white mb-2 italic">"{getDailyQuote().quote}"</p>
-              <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{getDailyQuote().focus}</p>
+              <p className="text-sm text-slate-900 dark:text-white font-medium">{getDailyQuote().focus}</p>
             </div>
           </div>
         </div>
@@ -652,21 +604,6 @@ export default function Home({ onViewChange }: HomeProps) {
           </div>
         </div>
       )}
-
-      <div className={`relative bg-gradient-to-br ${getWeeklyReflection().color} rounded-2xl shadow-lg p-6 border-2 ${getWeeklyReflection().borderColor}`}>
-        <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-xl bg-white shadow-md`}>
-            {(() => {
-              const ReflectionIcon = getWeeklyReflection().icon;
-              return <ReflectionIcon className="h-7 w-7 text-slate-700" />;
-            })()}
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-slate-900 mb-2">{getWeeklyReflection().title}</h3>
-            <p className="text-slate-700 leading-relaxed">{getWeeklyReflection().message}</p>
-          </div>
-        </div>
-      </div>
 
       <div>
         <h2 className="text-2xl font-bold text-slate-900 mb-6">What would you like to do today?</h2>

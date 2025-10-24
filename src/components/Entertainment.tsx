@@ -11,7 +11,7 @@ const TYPE_COLORS: Record<string, { bg: string; border: string; text: string }> 
   'Movie': { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700' },
   'TV Show': { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700' },
   'Artist': { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700' },
-  'Podcast': { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700' }
+  'Podcast': { bg: 'bg-teal-50', border: 'border-teal-200', text: 'text-teal-700' }
 };
 
 export default function Entertainment() {
@@ -189,8 +189,8 @@ export default function Entertainment() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-purple-100 rounded-lg">
-            <Film className="w-6 h-6 text-purple-600" />
+          <div className="p-3 bg-blue-100 rounded-lg">
+            <Film className="w-6 h-6 text-blue-600" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Entertainment</h1>
@@ -199,7 +199,7 @@ export default function Entertainment() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-sm hover:shadow-md"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
         >
           {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           {showForm ? 'Cancel' : 'Add'}
@@ -221,7 +221,7 @@ export default function Entertainment() {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Name of the book, movie, show..."
                   required
                   autoFocus
@@ -235,7 +235,7 @@ export default function Entertainment() {
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as typeof TYPES[number] })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 >
                   {TYPES.map(type => (
@@ -253,7 +253,7 @@ export default function Entertainment() {
                   list="playlists"
                   value={formData.playlist}
                   onChange={(e) => setFormData({ ...formData, playlist: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Horror Romance, 90s Action..."
                 />
                 <datalist id="playlists">
@@ -271,7 +271,7 @@ export default function Entertainment() {
                   type="text"
                   value={formData.where_to_find}
                   onChange={(e) => setFormData({ ...formData, where_to_find: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Netflix, Spotify, Library..."
                 />
               </div>
@@ -284,7 +284,7 @@ export default function Entertainment() {
                   type="text"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Sarah recommended, trending on TikTok..."
                 />
               </div>
@@ -300,7 +300,7 @@ export default function Entertainment() {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 {editingItem ? 'Update' : 'Add'}
               </button>
@@ -317,7 +317,7 @@ export default function Entertainment() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search your list..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -342,22 +342,22 @@ export default function Entertainment() {
                 <button
                   onClick={() => toggleCategory(playlistName)}
                   className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                    isUncategorized ? 'bg-gray-50' : 'bg-gradient-to-r from-purple-50 to-pink-50'
+                    isUncategorized ? 'bg-gray-50' : 'bg-gradient-to-r from-blue-50 to-cyan-50'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {isCollapsed ? (
-                      <ChevronRight className="w-5 h-5 text-purple-600" />
+                      <ChevronRight className="w-5 h-5 text-blue-600" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-purple-600" />
+                      <ChevronDown className="w-5 h-5 text-blue-600" />
                     )}
                     <h2 className={`text-lg font-semibold ${
-                      isUncategorized ? 'text-gray-700' : 'text-purple-700'
+                      isUncategorized ? 'text-gray-700' : 'text-blue-700'
                     }`}>
                       {playlistName}
                     </h2>
                     <span className={`px-2.5 py-1 rounded-full text-sm font-medium ${
-                      isUncategorized ? 'bg-gray-200 text-gray-700' : 'bg-white text-purple-700'
+                      isUncategorized ? 'bg-gray-200 text-gray-700' : 'bg-white text-blue-700'
                     }`}>
                       {playlistItems.length}
                     </span>
