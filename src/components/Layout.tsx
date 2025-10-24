@@ -252,7 +252,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
       </nav>
 
       <div className="flex h-full">
-        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 shadow-sm">
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center justify-between h-16 px-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
             <div className="flex items-center">
               <Heart className={`h-8 w-8 ${getColorClasses('text')}`} />
@@ -266,7 +266,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 pb-32 min-h-0" style={{ scrollbarGutter: 'stable' }}>
+          <div className="overflow-y-auto overflow-x-hidden py-6 px-4" style={{ height: 'calc(100vh - 4rem - 5.5rem)' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-4 ${
