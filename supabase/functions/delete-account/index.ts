@@ -70,62 +70,17 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Deleting account for user: ${user.id}`);
 
-    const tables = [
-      'user_achievements',
-      'workout_sessions',
-      'skincare_logs',
-      'journal_entries',
-      'hobby_logs',
-      'goals',
-      'savings_goals',
-      'saved_links',
-      'entertainment_items',
-      'user_profiles',
-    ];
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
+      user.id
+    );
 
-    for (const table of tables) {
-      const { error } = await supabaseAdmin
-        .from(table)
-        .delete()
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error(`Error deleting from ${table}:`, error);
-      } else {
-        console.log(`Successfully deleted from ${table}`);
-      }
-    }
-
-    console.log('Attempting to delete auth user...');
-    try {
-      const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(
-        user.id
-      );
-
-      if (deleteAuthError) {
-        console.error('Error deleting auth user:', deleteAuthError);
-        console.error('Delete auth error details:', JSON.stringify(deleteAuthError));
-        return new Response(
-          JSON.stringify({
-            error: 'Failed to delete authentication account',
-            details: deleteAuthError.message || 'Unknown error'
-          }),
-          {
-            status: 500,
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      }
-      console.log('Auth user deleted successfully');
-    } catch (authDeleteException) {
-      console.error('Exception deleting auth user:', authDeleteException);
+    if (deleteAuthError) {
+      console.error('Error deleting auth user:', deleteAuthError);
+      console.error('Delete auth error details:', JSON.stringify(deleteAuthError));
       return new Response(
         JSON.stringify({
-          error: 'Exception while deleting authentication account',
-          details: String(authDeleteException)
+          error: 'Failed to delete authentication account',
+          details: deleteAuthError.message || 'Unknown error'
         }),
         {
           status: 500,
@@ -136,6 +91,8 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
+
+    console.log('Account deleted successfully (CASCADE handled all related data)');
 
     return new Response(
       JSON.stringify({ success: true, message: 'Account deleted successfully' }),
