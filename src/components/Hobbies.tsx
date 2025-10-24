@@ -103,6 +103,30 @@ export default function Hobbies() {
     }
   };
 
+  const handleDeleteHobby = async (hobbyId: string) => {
+    if (!confirm('Are you sure you want to delete this hobby? All activity logs will also be deleted.')) {
+      return;
+    }
+
+    try {
+      await supabase.from('hobby_logs').delete().eq('hobby_id', hobbyId);
+
+      const { error } = await supabase.from('hobbies').delete().eq('id', hobbyId);
+
+      if (error) throw error;
+
+      setHobbies(hobbies.filter((h) => h.id !== hobbyId));
+      setLogs((prev) => {
+        const newLogs = { ...prev };
+        delete newLogs[hobbyId];
+        return newLogs;
+      });
+    } catch (error) {
+      console.error('Error deleting hobby:', error);
+      alert('Failed to delete hobby. Please try again.');
+    }
+  };
+
   const handleAddLog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selectedHobby) return;
