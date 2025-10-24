@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Dumbbell, Calendar, TrendingUp, Edit2, Trash2, Sparkles } from 'lucide-react';
+import { Plus, X, Dumbbell, Calendar, TrendingUp, Edit2, Trash2, Sparkles, Copy, History, ArrowUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { WorkoutSession, Exercise, PlannedWorkout } from '../types';
@@ -17,6 +17,9 @@ export default function Gym() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatingWorkout, setGeneratingWorkout] = useState(false);
+  const [exerciseHistory, setExerciseHistory] = useState<Record<string, { sets: number; reps: number; weight: number; date: string }>>({});
+  const [showHistory, setShowHistory] = useState(false);
+  const [selectedExerciseName, setSelectedExerciseName] = useState('');
 
   const [newWorkout, setNewWorkout] = useState({
     workout_name: '',
@@ -46,6 +49,64 @@ export default function Gym() {
     weight: 0,
     notes: '',
   });
+
+  // Get last performance for current exercise
+  const getLastPerformance = (exerciseName: string) => {
+    if (!exerciseName) return null;
+
+    // Search through all workouts for this exercise
+    for (const workout of workouts) {
+      if (workout.exercises && Array.isArray(workout.exercises)) {
+        const exercise = workout.exercises.find(
+          (ex: Exercise) => ex.name.toLowerCase() === exerciseName.toLowerCase()
+        );
+        if (exercise) {
+          return {
+            ...exercise,
+            date: new Date(workout.workout_date).toLocaleDateString(),
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Get all history for an exercise
+  const getExerciseHistory = (exerciseName: string) => {
+    if (!exerciseName) return [];
+
+    const history: Array<{ sets: number; reps: number; weight: number; date: string }> = [];
+
+    workouts.forEach((workout) => {
+      if (workout.exercises && Array.isArray(workout.exercises)) {
+        workout.exercises.forEach((ex: Exercise) => {
+          if (ex.name.toLowerCase() === exerciseName.toLowerCase()) {
+            history.push({
+              sets: ex.sets,
+              reps: ex.reps,
+              weight: ex.weight || 0,
+              date: new Date(workout.workout_date).toLocaleDateString(),
+            });
+          }
+        });
+      }
+    });
+
+    return history;
+  };
+
+  // Suggest progressive overload
+  const getSuggestion = (lastPerformance: { sets: number; reps: number; weight: number }) => {
+    // Suggest +2.5kg or +1 rep
+    const weightIncrease = lastPerformance.weight + 2.5;
+    const repIncrease = lastPerformance.reps + 1;
+
+    return {
+      weight: weightIncrease,
+      reps: repIncrease,
+      sets: lastPerformance.sets,
+    };
+  };
 
   useEffect(() => {
     if (user) {
@@ -173,6 +234,41 @@ export default function Gym() {
         exercises: [...newWorkout.exercises, { ...currentExercise }],
       });
       setCurrentExercise({ name: '', sets: 0, reps: 0, weight: 0, notes: '' });
+    }
+  };
+
+  const handleCopyLastWorkout = () => {
+    if (workouts.length > 0) {
+      const lastWorkout = workouts[0];
+      setNewWorkout({
+        workout_name: lastWorkout.workout_name,
+        exercises: lastWorkout.exercises as Exercise[],
+        duration_minutes: lastWorkout.duration_minutes || 0,
+        notes: '',
+      });
+      setShowForm(true);
+    }
+  };
+
+  const handleUseSuggestion = (type: 'weight' | 'reps') => {
+    const lastPerf = getLastPerformance(currentExercise.name);
+    if (lastPerf) {
+      const suggestion = getSuggestion(lastPerf);
+      if (type === 'weight') {
+        setCurrentExercise({
+          ...currentExercise,
+          sets: suggestion.sets,
+          reps: lastPerf.reps,
+          weight: suggestion.weight,
+        });
+      } else {
+        setCurrentExercise({
+          ...currentExercise,
+          sets: suggestion.sets,
+          reps: suggestion.reps,
+          weight: lastPerf.weight,
+        });
+      }
     }
   };
 
@@ -370,7 +466,17 @@ export default function Gym() {
 
       {view === 'log' && (
         <>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-3">
+            {workouts.length > 0 && (
+              <button
+                onClick={handleCopyLastWorkout}
+                className="flex items-center gap-2 bg-slate-100 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors border border-slate-300"
+              >
+                <Copy className="h-5 w-5" />
+                <span className="hidden sm:inline">Copy Last Workout</span>
+                <span className="sm:hidden">Copy Last</span>
+              </button>
+            )}
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center gap-2 bg-amber-400 text-white px-4 py-2 rounded-lg hover:bg-amber-500 transition-colors shadow-lg"
@@ -674,13 +780,71 @@ export default function Gym() {
               <div className="bg-slate-50 p-4 rounded-lg space-y-3">
                 <h3 className="font-semibold text-slate-900">Add Exercise</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    value={currentExercise.name}
-                    onChange={(e) => setCurrentExercise({ ...currentExercise, name: e.target.value })}
-                    className="col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-400"
-                    placeholder="Exercise name"
-                  />
+                  <div className="col-span-2">
+                    <input
+                      type="text"
+                      value={currentExercise.name}
+                      onChange={(e) => setCurrentExercise({ ...currentExercise, name: e.target.value })}
+                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-400"
+                      placeholder="Exercise name"
+                    />
+                    {currentExercise.name && (() => {
+                      const lastPerf = getLastPerformance(currentExercise.name);
+                      const history = getExerciseHistory(currentExercise.name);
+                      if (lastPerf) {
+                        const suggestion = getSuggestion(lastPerf);
+                        return (
+                          <div className="mt-2 space-y-2">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-medium text-blue-900">Last Performance</p>
+                                {history.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedExerciseName(currentExercise.name);
+                                      setShowHistory(true);
+                                    }}
+                                    className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                  >
+                                    <History className="h-3 w-3" />
+                                    View History ({history.length})
+                                  </button>
+                                )}
+                              </div>
+                              <p className="text-sm text-blue-700">
+                                {lastPerf.sets} sets × {lastPerf.reps} reps @ {lastPerf.weight} lbs
+                              </p>
+                              <p className="text-xs text-blue-600 mt-1">{lastPerf.date}</p>
+                            </div>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <ArrowUp className="h-4 w-4 text-green-600" />
+                                <p className="text-sm font-medium text-green-900">Suggested Progress</p>
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUseSuggestion('weight')}
+                                  className="flex-1 text-xs bg-green-100 text-green-700 px-3 py-2 rounded hover:bg-green-200 transition-colors"
+                                >
+                                  +2.5 lbs: {suggestion.sets}×{lastPerf.reps} @ {suggestion.weight} lbs
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUseSuggestion('reps')}
+                                  className="flex-1 text-xs bg-green-100 text-green-700 px-3 py-2 rounded hover:bg-green-200 transition-colors"
+                                >
+                                  +1 rep: {suggestion.sets}×{suggestion.reps} @ {lastPerf.weight} lbs
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
                   <input
                     type="number"
                     value={currentExercise.sets || ''}
@@ -701,9 +865,10 @@ export default function Gym() {
                   />
                   <input
                     type="number"
+                    step="0.1"
                     value={currentExercise.weight || ''}
                     onChange={(e) =>
-                      setCurrentExercise({ ...currentExercise, weight: parseInt(e.target.value) || 0 })
+                      setCurrentExercise({ ...currentExercise, weight: parseFloat(e.target.value) || 0 })
                     }
                     className="col-span-2 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-400"
                     placeholder="Weight (lbs)"
@@ -783,6 +948,92 @@ export default function Gym() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showHistory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <History className="h-6 w-6 text-amber-500" />
+                {selectedExerciseName}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowHistory(false);
+                  setSelectedExerciseName('');
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {getExerciseHistory(selectedExerciseName).map((record, index) => {
+                const isFirst = index === 0;
+                const prev = index > 0 ? getExerciseHistory(selectedExerciseName)[index - 1] : null;
+                const weightChange = prev ? record.weight - prev.weight : 0;
+                const repChange = prev ? record.reps - prev.reps : 0;
+
+                return (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg border-2 ${
+                      isFirst
+                        ? 'bg-amber-50 border-amber-200'
+                        : 'bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-medium text-slate-700">{record.date}</p>
+                      {isFirst && (
+                        <span className="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded-full font-medium">
+                          Latest
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {record.sets} sets × {record.reps} reps @ {record.weight} lbs
+                    </p>
+                    {prev && (weightChange !== 0 || repChange !== 0) && (
+                      <div className="mt-2 flex gap-2 text-xs">
+                        {weightChange !== 0 && (
+                          <span
+                            className={`flex items-center gap-1 ${
+                              weightChange > 0 ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            <ArrowUp
+                              className={`h-3 w-3 ${
+                                weightChange < 0 ? 'rotate-180' : ''
+                              }`}
+                            />
+                            {Math.abs(weightChange)} lbs
+                          </span>
+                        )}
+                        {repChange !== 0 && (
+                          <span
+                            className={`flex items-center gap-1 ${
+                              repChange > 0 ? 'text-green-600' : 'text-red-600'
+                            }`}
+                          >
+                            <ArrowUp
+                              className={`h-3 w-3 ${
+                                repChange < 0 ? 'rotate-180' : ''
+                              }`}
+                            />
+                            {Math.abs(repChange)} reps
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
