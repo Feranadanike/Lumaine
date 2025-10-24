@@ -301,7 +301,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      isExpanded ? 'max-h-[1000px] opacity-100 mt-2 mb-3' : 'max-h-0 opacity-0'
+                      isExpanded ? 'max-h-[5000px] opacity-100 mt-2 mb-3' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div className="space-y-2 pl-1">
