@@ -235,37 +235,34 @@ export default function Profile() {
 
     setIsDeleting(true);
     try {
-      const tables = [
-        'user_achievements',
-        'workout_sessions',
-        'skincare_logs',
-        'journal_entries',
-        'hobby_logs',
-        'goals',
-        'savings_goals',
-        'saved_links',
-        'entertainment_items',
-        'user_profiles'
-      ];
+      const { data: { session } } = await supabase.auth.getSession();
 
-      for (const table of tables) {
-        await supabase.from(table).delete().eq('user_id', user?.id);
+      if (!session) {
+        alert('Session expired. Please log in again.');
+        return;
       }
 
-      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || '');
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`;
 
-      if (authError) {
-        const { error: signOutError } = await supabase.auth.signOut();
-        if (signOutError) throw signOutError;
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-        alert('Account data deleted. Please contact support to complete account deletion.');
-      } else {
-        await signOut();
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete account');
       }
+
+      alert('Your account has been permanently deleted.');
+      await signOut();
     } catch (error) {
       console.error('Error deleting account:', error);
       alert('Failed to delete account. Please try again or contact support.');
-    } finally {
       setIsDeleting(false);
     }
   };
