@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Calendar, Check, Briefcase, Heart, Activity, Home, Sparkles, AlertCircle, AlertTriangle, AlertOctagon, Zap } from 'lucide-react';
+import { Plus, X, Calendar, Check, Briefcase, Heart, Activity, Home, Sparkles, AlertCircle, AlertTriangle, AlertOctagon, Zap, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { DailyPlan, PlanTask } from '../types';
@@ -119,6 +119,27 @@ export default function Planner() {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    if (!dailyPlan) return;
+    if (!confirm('Delete this task?')) return;
+
+    const updatedTasks = dailyPlan.tasks.filter((task) => task.id !== taskId);
+
+    try {
+      const { data, error } = await supabase
+        .from('daily_planner')
+        .update({ tasks: updatedTasks, updated_at: new Date().toISOString() })
+        .eq('id', dailyPlan.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setDailyPlan(data);
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8 text-slate-600">Loading...</div>;
   }
@@ -221,7 +242,7 @@ export default function Planner() {
                   return (
                     <div
                       key={task.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
+                      className={`group flex items-center justify-between p-4 rounded-lg border-2 transition-all ${
                         task.completed
                           ? 'bg-slate-50 border-slate-200'
                           : `bg-white ${categoryStyle.border} hover:${categoryStyle.bg}`
@@ -272,6 +293,12 @@ export default function Planner() {
                           </div>
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleDeleteTask(task.id)}
+                        className="flex-shrink-0 ml-3 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   );
                 })
@@ -400,12 +427,21 @@ export default function Planner() {
                 </div>
                 <p className="text-xs text-slate-500 mt-2">Choose a category to organize your tasks</p>
               </div>
-              <button
-                type="submit"
-                className="w-full bg-purple-400 text-white py-3 rounded-lg hover:bg-purple-500 font-medium transition-colors shadow-lg"
-              >
-                Add Task
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowTaskForm(false)}
+                  className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-lg hover:bg-slate-200 font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-400 text-white py-3 rounded-lg hover:bg-purple-500 font-medium transition-colors shadow-lg"
+                >
+                  Add Task
+                </button>
+              </div>
             </form>
           </div>
         </div>
