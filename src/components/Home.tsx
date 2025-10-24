@@ -66,12 +66,12 @@ export default function Home({ onViewChange }: HomeProps) {
     try {
       const { data } = await supabase
         .from('user_profiles')
-        .select('full_name')
+        .select('display_name')
         .eq('id', user?.id)
         .maybeSingle();
 
-      if (data?.full_name) {
-        setUserName(data.full_name.split(' ')[0]);
+      if (data?.display_name) {
+        setUserName(data.display_name.split(' ')[0]);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -92,7 +92,7 @@ export default function Home({ onViewChange }: HomeProps) {
           .eq('is_active', true)
           .contains('day_of_week', [dayOfWeek]),
         supabase
-          .from('planned_workout_routines')
+          .from('planned_workouts')
           .select('*')
           .eq('user_id', user?.id)
           .eq('is_active', true)

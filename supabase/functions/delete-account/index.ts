@@ -17,6 +17,7 @@ Deno.serve(async (req: Request) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      console.error('Missing authorization header');
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
         {
@@ -56,8 +57,9 @@ Deno.serve(async (req: Request) => {
     } = await supabaseClient.auth.getUser();
 
     if (userError || !user) {
+      console.error('User verification failed:', userError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
         {
           status: 401,
           headers: {
@@ -97,7 +99,6 @@ Deno.serve(async (req: Request) => {
       'savings_goals',
       'saved_links',
       'entertainment_items',
-      'user_profiles',
     ];
 
     for (const table of tables) {
@@ -140,11 +141,10 @@ Deno.serve(async (req: Request) => {
 
     if (deleteAuthError) {
       console.error('Error deleting auth user:', deleteAuthError);
-      console.error('Delete auth error details:', JSON.stringify(deleteAuthError));
       return new Response(
         JSON.stringify({
           error: 'Failed to delete authentication account',
-          details: deleteAuthError.message || 'Unknown error'
+          details: deleteAuthError.message
         }),
         {
           status: 500,
