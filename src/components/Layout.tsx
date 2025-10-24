@@ -345,7 +345,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
 
         <main className="flex-1 lg:pl-64 h-full overflow-y-auto">
           <div className="min-h-full">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="hidden lg:flex justify-between items-center mb-4">
                 <button
                   onClick={onSearchOpen}
