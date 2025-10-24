@@ -57,6 +57,7 @@ const navigationCategories = [
     items: [
       { id: 'planner', name: 'Planner', icon: Calendar },
       { id: 'journal', name: 'Journal', icon: BookOpen },
+      { id: 'mooddiary', name: 'Mood Diary', icon: Heart },
       { id: 'notes', name: 'Quick Notes', icon: FileText },
       { id: 'hobbies', name: 'Hobbies', icon: Smile },
       { id: 'links', name: 'Saved Links', icon: Bookmark },

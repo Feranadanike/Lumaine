@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { TrendingUp, Activity, Target, Calendar, BarChart3, Zap, Award, Clock } from 'lucide-react';
+import { TrendingUp, Activity, Target, Calendar, BarChart3, Zap, Award, Clock, Heart, Smile } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,6 +28,12 @@ interface AnalyticsData {
     current: number;
     longest: number;
   };
+  moodInsights: {
+    totalEntries: number;
+    topEmotions: { emotion: string; count: number }[];
+    topContexts: { context: string; count: number }[];
+    averageIntensity: number;
+  };
 }
 
 export default function Analytics() {
@@ -38,7 +44,13 @@ export default function Analytics() {
     completionRates: { workout: 0, skincare: 0, hobby: 0, journal: 0 },
     totalActivities: 0,
     weeklyGoal: 14,
-    streaks: { current: 0, longest: 0 }
+    streaks: { current: 0, longest: 0 },
+    moodInsights: {
+      totalEntries: 0,
+      topEmotions: [],
+      topContexts: [],
+      averageIntensity: 0
+    }
   });
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'week' | 'month'>('week');
@@ -57,6 +69,41 @@ export default function Analytics() {
 
       const weekAgoStr = weekAgo.toISOString().split('T')[0];
       const monthAgoStr = monthAgo.toISOString().split('T')[0];
+
+      const moodData = await supabase
+        .from('mood_entries')
+        .select('*')
+        .eq('user_id', user?.id)
+        .is('deleted_at', null)
+        .gte('entry_date', timeRange === 'week' ? weekAgoStr : monthAgoStr);
+
+      const emotionCounts: Record<string, number> = {};
+      const contextCounts: Record<string, number> = {};
+      let totalIntensity = 0;
+
+      (moodData.data || []).forEach((entry: any) => {
+        (entry.emotions || []).forEach((emotion: string) => {
+          emotionCounts[emotion] = (emotionCounts[emotion] || 0) + 1;
+        });
+        (entry.context_factors || []).forEach((context: string) => {
+          contextCounts[context] = (contextCounts[context] || 0) + 1;
+        });
+        totalIntensity += entry.intensity || 0;
+      });
+
+      const topEmotions = Object.entries(emotionCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([emotion, count]) => ({ emotion, count }));
+
+      const topContexts = Object.entries(contextCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([context, count]) => ({ context, count }));
+
+      const averageIntensity = moodData.data?.length
+        ? Math.round(totalIntensity / moodData.data.length)
+        : 0;
 
       const [
         weekWorkouts,
@@ -123,6 +170,12 @@ export default function Analytics() {
         streaks: {
           current: currentStreak,
           longest: longestStreak
+        },
+        moodInsights: {
+          totalEntries: moodData.data?.length || 0,
+          topEmotions,
+          topContexts,
+          averageIntensity
         }
       });
     } catch (error) {
@@ -371,6 +424,65 @@ export default function Analytics() {
           </div>
         </div>
       </div>
+
+      {analytics.moodInsights.totalEntries > 0 && (
+        <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl shadow-lg p-4 md:p-6 border-2 border-rose-200">
+          <div className="flex items-center gap-2 mb-6">
+            <Heart className="h-6 w-6 text-rose-600" />
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">Mood Insights</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4 mb-4">
+            <div className="bg-white bg-opacity-50 rounded-xl p-4">
+              <p className="text-sm font-medium text-slate-600 mb-1">Total Entries</p>
+              <p className="text-3xl font-bold text-slate-900">{analytics.moodInsights.totalEntries}</p>
+            </div>
+            <div className="bg-white bg-opacity-50 rounded-xl p-4">
+              <p className="text-sm font-medium text-slate-600 mb-1">Avg Intensity</p>
+              <p className="text-3xl font-bold text-slate-900">{analytics.moodInsights.averageIntensity}/10</p>
+            </div>
+            <div className="bg-white bg-opacity-50 rounded-xl p-4">
+              <p className="text-sm font-medium text-slate-600 mb-1">Check-in Rate</p>
+              <p className="text-3xl font-bold text-slate-900">
+                {Math.round((analytics.moodInsights.totalEntries / (timeRange === 'week' ? 7 : 30)) * 100)}%
+              </p>
+            </div>
+          </div>
+
+          {analytics.moodInsights.topEmotions.length > 0 && (
+            <div className="mb-4">
+              <p className="text-sm font-medium text-slate-700 mb-2">Most Common Emotions</p>
+              <div className="flex flex-wrap gap-2">
+                {analytics.moodInsights.topEmotions.map(({ emotion, count }) => (
+                  <span
+                    key={emotion}
+                    className="px-3 py-1.5 bg-white bg-opacity-70 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-2"
+                  >
+                    <Smile className="h-4 w-4" />
+                    {emotion.charAt(0).toUpperCase() + emotion.slice(1)} ({count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {analytics.moodInsights.topContexts.length > 0 && (
+            <div>
+              <p className="text-sm font-medium text-slate-700 mb-2">Top Influencing Factors</p>
+              <div className="flex flex-wrap gap-2">
+                {analytics.moodInsights.topContexts.map(({ context, count }) => (
+                  <span
+                    key={context}
+                    className="px-3 py-1.5 bg-white bg-opacity-70 rounded-lg text-sm font-medium text-slate-700"
+                  >
+                    {context.charAt(0).toUpperCase() + context.slice(1)} ({count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-lg p-4 md:p-6 border-2 border-green-200">
         <div className="flex items-start gap-3">

@@ -21,6 +21,7 @@ import Achievements from './components/Achievements';
 import Analytics from './components/Analytics';
 import Notes from './components/Notes';
 import MealPrep from './components/MealPrep';
+import MoodDiary from './components/MoodDiary';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -62,6 +63,7 @@ function AppContent() {
       {currentView === 'achievements' && <Achievements />}
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'notes' && <Notes />}
+      {currentView === 'mooddiary' && <MoodDiary />}
     </Layout>
   );
 }
