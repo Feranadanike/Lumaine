@@ -19,6 +19,7 @@ import SavedLinks from './components/SavedLinks';
 import Entertainment from './components/Entertainment';
 import Achievements from './components/Achievements';
 import Analytics from './components/Analytics';
+import Notes from './components/Notes';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -56,6 +57,7 @@ function AppContent() {
       {currentView === 'entertainment' && <Entertainment />}
       {currentView === 'achievements' && <Achievements />}
       {currentView === 'analytics' && <Analytics />}
+      {currentView === 'notes' && <Notes />}
     </Layout>
   );
 }

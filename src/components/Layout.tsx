@@ -18,7 +18,8 @@ import {
   Bookmark,
   Film,
   Trophy,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -52,6 +53,7 @@ const navigationCategories = [
     items: [
       { id: 'planner', name: 'Planner', icon: Calendar },
       { id: 'journal', name: 'Journal', icon: BookOpen },
+      { id: 'notes', name: 'Quick Notes', icon: FileText },
       { id: 'hobbies', name: 'Hobbies', icon: Smile },
       { id: 'links', name: 'Saved Links', icon: Bookmark },
       { id: 'entertainment', name: 'Entertainment', icon: Film },
