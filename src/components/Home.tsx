@@ -506,6 +506,22 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
       </div>
 
+      <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
+        <div className="flex items-start gap-4">
+          <div className="p-3 rounded-xl bg-white shadow-md">
+            <Quote className="h-7 w-7 text-purple-500" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Today's Focus</h3>
+            </div>
+            <p className="text-lg font-medium text-slate-900 dark:text-white mb-2 italic">"{getDailyQuote().quote}"</p>
+            <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">{getDailyQuote().focus}</p>
+          </div>
+        </div>
+      </div>
+
       {routines.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-900 dark:via-cyan-900 dark:to-teal-900 rounded-2xl shadow-lg p-6 border-2 border-blue-200 dark:border-blue-700">
           <div className="flex items-center justify-between mb-5">
@@ -560,98 +576,6 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {todayTasks.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-2 border-blue-100">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Clock className="h-6 w-6 text-blue-500" />
-                Today's Tasks
-              </h2>
-              <span className="text-sm text-slate-600">
-                {todayTasks.filter(t => t.completed).length} of {todayTasks.length} completed
-              </span>
-            </div>
-            <div className="space-y-3">
-              {todayTasks.map((task) => {
-              const getTaskIcon = () => {
-                switch (task.type) {
-                  case 'skincare': return Droplet;
-                  case 'workout': return Dumbbell;
-                  case 'journal': return BookOpen;
-                  case 'hobby': return Heart;
-                  case 'goal': return Target;
-                  default: return Circle;
-                }
-              };
-              const TaskIcon = getTaskIcon();
-              const getTaskColor = () => {
-                switch (task.type) {
-                  case 'skincare': return 'text-pink-500 bg-pink-50';
-                  case 'workout': return 'text-amber-500 bg-amber-50';
-                  case 'journal': return 'text-purple-500 bg-purple-50';
-                  case 'hobby': return 'text-rose-500 bg-rose-50';
-                  case 'goal': return 'text-blue-500 bg-blue-50';
-                  default: return 'text-slate-500 bg-slate-50';
-                }
-              };
-
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => onViewChange(task.type)}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
-                    task.completed
-                      ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 animate-pulse-once'
-                      : 'bg-gradient-to-r from-white to-slate-50 border-slate-200 hover:border-blue-300 hover:scale-[1.02]'
-                  }`}
-                >
-                  <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
-                    <TaskIcon className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`font-semibold transition-all duration-300 ${task.completed ? 'text-slate-600 line-through' : 'text-slate-900'}`}>
-                        {task.title}
-                      </h3>
-                      {task.time && (
-                        <span className="text-xs bg-slate-200 text-slate-700 px-2 py-1 rounded-full">
-                          {task.time}
-                        </span>
-                      )}
-                    </div>
-                    {task.details && (
-                      <p className="text-sm text-slate-500 mt-1">{task.details}</p>
-                    )}
-                  </div>
-                  {task.completed ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0 animate-bounce-in" />
-                  ) : (
-                    <Circle className="h-6 w-6 text-slate-300 flex-shrink-0 group-hover:text-blue-400 transition-colors" />
-                  )}
-                </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className={`bg-gradient-to-br ${getColorClasses().gradient} rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
-        <div className="flex items-start gap-4">
-          <div className="p-3 rounded-xl bg-white shadow-md">
-            <Quote className="h-7 w-7 text-purple-500" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="h-5 w-5 text-amber-500" />
-              <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wide">Today's Focus</h3>
-            </div>
-            <p className="text-lg font-medium text-slate-900 mb-2 italic">"{getDailyQuote().quote}"</p>
-            <p className="text-sm text-purple-600 font-medium">{getDailyQuote().focus}</p>
-          </div>
-        </div>
-      </div>
 
       <div className={`relative bg-gradient-to-br ${getWeeklyReflection().color} rounded-2xl shadow-lg p-6 border-2 ${getWeeklyReflection().borderColor}`}>
         <div className="flex items-start gap-4">
