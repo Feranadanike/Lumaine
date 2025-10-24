@@ -16,6 +16,8 @@ Deno.serve(async (req: Request) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
     if (!authHeader) {
       console.error('Missing authorization header');
       return new Response(
@@ -30,15 +32,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
-    );
+    const token = authHeader.replace('Bearer ', '');
+    console.log('Token extracted, length:', token.length);
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -51,15 +46,13 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseClient.auth.getUser();
+    console.log('Verifying user with token...');
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
 
     if (userError || !user) {
-      console.error('User verification failed:', userError);
+      console.error('User verification failed:', userError?.message);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
+        JSON.stringify({ error: 'Unauthorized', details: userError?.message || 'Auth session missing!' }),
         {
           status: 401,
           headers: {
