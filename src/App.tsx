@@ -9,7 +9,7 @@ import AICoach from './components/AICoach';
 import Goals from './components/Goals';
 import Skincare from './components/Skincare';
 import Gym from './components/Gym';
-import Savings from './components/Savings';
+import Finance from './components/Finance';
 import Journal from './components/Journal';
 import Wellness from './components/Wellness';
 import Planner from './components/Planner';
@@ -47,7 +47,7 @@ function AppContent() {
       {currentView === 'goals' && <Goals />}
       {currentView === 'skincare' && <Skincare />}
       {currentView === 'gym' && <Gym />}
-      {currentView === 'savings' && <Savings />}
+      {currentView === 'savings' && <Finance />}
       {currentView === 'journal' && <Journal />}
       {currentView === 'wellness' && <Wellness />}
       {currentView === 'planner' && <Planner />}

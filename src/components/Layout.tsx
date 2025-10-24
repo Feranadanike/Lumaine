@@ -3,7 +3,7 @@ import {
   Home,
   Droplet,
   Dumbbell,
-  PiggyBank,
+  Wallet,
   BookOpen,
   Calendar,
   Heart,
@@ -62,7 +62,7 @@ const navigationCategories = [
   {
     name: 'Finance & AI',
     items: [
-      { id: 'savings', name: 'Savings', icon: PiggyBank },
+      { id: 'savings', name: 'Finance', icon: Wallet },
       { id: 'coach', name: 'Lumaine Coach', icon: Bot },
       { id: 'profile', name: 'Profile', icon: User },
     ]

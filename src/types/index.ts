@@ -73,6 +73,44 @@ export interface SavingsTransaction {
   created_at: string;
 }
 
+export interface Bill {
+  id: string;
+  user_id: string;
+  bill_name: string;
+  amount: number;
+  due_day: number;
+  category: string;
+  is_autopay: boolean;
+  notes?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BillPayment {
+  id: string;
+  bill_id: string;
+  user_id: string;
+  amount: number;
+  payment_date: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  service_name: string;
+  amount: number;
+  billing_cycle: 'weekly' | 'monthly' | 'yearly';
+  next_billing_date: string;
+  category: string;
+  is_active: boolean;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface JournalEntry {
   id: string;
   user_id: string;
