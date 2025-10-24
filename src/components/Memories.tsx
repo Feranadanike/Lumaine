@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Camera, Plus, X, MapPin, Tag, Calendar, Search } from 'lucide-react';
+import { Camera, Plus, X, MapPin, Tag, Calendar, Search, Upload } from 'lucide-react';
 
 interface Memory {
   id: string;
@@ -21,6 +21,9 @@ export default function Memories() {
   const [showForm, setShowForm] = useState(false);
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -54,18 +57,62 @@ export default function Memories() {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      setFormData({ ...formData, photo_url: '' });
+    }
+  };
+
+  const uploadImage = async (file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+
+    const { data, error } = await supabase.storage
+      .from('memories')
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('memories')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.photo_url.trim() || !formData.title.trim()) return;
+    if ((!formData.photo_url.trim() && !selectedFile) || !formData.title.trim()) {
+      alert('Please provide a title and either upload an image or enter an image URL');
+      return;
+    }
 
     try {
+      setUploading(true);
+      let photoUrl = formData.photo_url;
+
+      if (selectedFile) {
+        photoUrl = await uploadImage(selectedFile);
+      }
+
       const { error } = await supabase
         .from('memories')
         .insert([{
           user_id: user?.id,
           title: formData.title,
           description: formData.description,
-          photo_url: formData.photo_url,
+          photo_url: photoUrl,
           memory_date: formData.memory_date,
           location: formData.location,
           tags: formData.tags
@@ -82,10 +129,15 @@ export default function Memories() {
         tags: [],
         newTag: ''
       });
+      setSelectedFile(null);
+      setPreviewUrl('');
       setShowForm(false);
       loadMemories();
     } catch (error) {
       console.error('Error adding memory:', error);
+      alert('Failed to add memory. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -172,18 +224,62 @@ export default function Memories() {
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Photo URL *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Photo *
               </label>
-              <input
-                type="url"
-                value={formData.photo_url}
-                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                placeholder="https://example.com/photo.jpg"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">Use stock photos from Pexels or your own hosted images</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors cursor-pointer bg-gray-50 hover:bg-blue-50">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                    <div className="flex items-center gap-2 text-gray-600">
+                      <Upload className="w-5 h-5" />
+                      <span>Upload an image</span>
+                    </div>
+                  </label>
+                  {selectedFile && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                      <span className="font-medium">{selectedFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setPreviewUrl('');
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                  {previewUrl && (
+                    <div className="mt-2">
+                      <img src={previewUrl} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+                    </div>
+                  )}
+                </div>
+                <div className="text-center text-sm text-gray-500">or</div>
+                <div>
+                  <input
+                    type="url"
+                    value={formData.photo_url}
+                    onChange={(e) => {
+                      setFormData({ ...formData, photo_url: e.target.value });
+                      setSelectedFile(null);
+                      setPreviewUrl('');
+                    }}
+                    placeholder="https://example.com/photo.jpg"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    disabled={uploading || !!selectedFile}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Or paste an image URL from Pexels or elsewhere</p>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -285,14 +381,20 @@ export default function Memories() {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                disabled={uploading}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Memory
+                {uploading ? 'Uploading...' : 'Save Memory'}
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                onClick={() => {
+                  setShowForm(false);
+                  setSelectedFile(null);
+                  setPreviewUrl('');
+                }}
+                disabled={uploading}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>

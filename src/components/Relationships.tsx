@@ -12,7 +12,6 @@ interface Relationship {
   other_important_dates: Array<{ name: string; date: string }>;
   gift_ideas: string[];
   notes: string;
-  photo_url: string;
   created_at: string;
 }
 
@@ -39,7 +38,6 @@ export default function Relationships() {
     other_important_dates: [] as Array<{ name: string; date: string }>,
     gift_ideas: [] as string[],
     notes: '',
-    photo_url: '',
     newDateName: '',
     newDateValue: '',
     newGiftIdea: ''
@@ -77,7 +75,6 @@ export default function Relationships() {
       other_important_dates: [],
       gift_ideas: [],
       notes: '',
-      photo_url: '',
       newDateName: '',
       newDateValue: '',
       newGiftIdea: ''
@@ -96,7 +93,6 @@ export default function Relationships() {
       other_important_dates: relationship.other_important_dates || [],
       gift_ideas: relationship.gift_ideas || [],
       notes: relationship.notes,
-      photo_url: relationship.photo_url,
       newDateName: '',
       newDateValue: '',
       newGiftIdea: ''
@@ -117,8 +113,7 @@ export default function Relationships() {
         anniversary_date: formData.anniversary_date || null,
         other_important_dates: formData.other_important_dates,
         gift_ideas: formData.gift_ideas,
-        notes: formData.notes,
-        photo_url: formData.photo_url
+        notes: formData.notes
       };
 
       if (editingRelationship) {
@@ -379,19 +374,6 @@ export default function Relationships() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Photo URL
-              </label>
-              <input
-                type="url"
-                value={formData.photo_url}
-                onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
-                placeholder="https://example.com/photo.jpg"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -555,18 +537,7 @@ export default function Relationships() {
               className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
             >
               <div className="aspect-square w-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                {person.photo_url ? (
-                  <img
-                    src={person.photo_url}
-                    alt={person.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <Users className="w-20 h-20 text-gray-300" />
-                )}
+                <Users className="w-20 h-20 text-gray-300" />
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between mb-2">
@@ -640,20 +611,9 @@ export default function Relationships() {
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
-                  {selectedPerson.photo_url ? (
-                    <img
-                      src={selectedPerson.photo_url}
-                      alt={selectedPerson.name}
-                      className="w-20 h-20 rounded-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-                      <Users className="w-10 h-10 text-gray-400" />
-                    </div>
-                  )}
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                    <Users className="w-10 h-10 text-gray-400" />
+                  </div>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{selectedPerson.name}</h2>
                     <div className="flex items-center gap-2 mt-1">
