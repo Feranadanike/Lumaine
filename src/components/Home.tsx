@@ -524,10 +524,10 @@ export default function Home({ onViewChange }: HomeProps) {
         </div>
 
         {todayTasks.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 border-blue-100 dark:border-blue-700">
+          <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border-2 ${getColorClasses().border}`}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Clock className="h-6 w-6 text-blue-500" />
+              <h2 className={`text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2`}>
+                <Clock className={`h-6 w-6 ${getColorClasses().text}`} />
                 Today's Tasks
               </h2>
               <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -565,7 +565,7 @@ export default function Home({ onViewChange }: HomeProps) {
                     className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-300 hover:shadow-md group ${
                       task.completed
                         ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900 dark:to-emerald-900 border-green-300 dark:border-green-700'
-                        : 'bg-gradient-to-r from-white to-slate-50 dark:from-gray-800 dark:to-gray-700 border-slate-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:scale-[1.02]'
+                        : `bg-gradient-to-r from-white to-slate-50 dark:from-gray-800 dark:to-gray-700 border-slate-200 dark:border-gray-600 hover:${getColorClasses().border} hover:scale-[1.02]`
                     }`}
                   >
                     <div className={`flex-shrink-0 p-2 rounded-lg transition-transform duration-300 group-hover:scale-110 ${getTaskColor()}`}>
