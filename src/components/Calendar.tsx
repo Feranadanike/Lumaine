@@ -59,51 +59,18 @@ export default function Calendar() {
       const allEvents: CalendarEvent[] = [];
 
       const [
-        workouts,
-        plannedWorkouts,
-        skincareLogs,
         journalEntries,
-        achievements,
-        hobbyLogs,
         dailyPlanner,
         mealPlans,
         goals,
         moodEntries,
       ] = await Promise.all([
         supabase
-          .from('workout_sessions')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('workout_date', firstDay.toISOString().split('T')[0])
-          .lte('workout_date', lastDay.toISOString().split('T')[0]),
-        supabase
-          .from('planned_workouts')
-          .select('*')
-          .eq('user_id', user.id),
-        supabase
-          .from('skincare_logs')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('log_date', firstDay.toISOString().split('T')[0])
-          .lte('log_date', lastDay.toISOString().split('T')[0]),
-        supabase
           .from('journal_entries')
           .select('*')
           .eq('user_id', user.id)
           .gte('entry_date', firstDay.toISOString().split('T')[0])
           .lte('entry_date', lastDay.toISOString().split('T')[0]),
-        supabase
-          .from('daily_achievements')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('achievement_date', firstDay.toISOString().split('T')[0])
-          .lte('achievement_date', lastDay.toISOString().split('T')[0]),
-        supabase
-          .from('hobby_logs')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('log_date', firstDay.toISOString().split('T')[0])
-          .lte('log_date', lastDay.toISOString().split('T')[0]),
         supabase
           .from('daily_planner')
           .select('*')
@@ -132,47 +99,15 @@ export default function Calendar() {
           .lte('entry_date', lastDay.toISOString().split('T')[0]),
       ]);
 
-      if (workouts.data) {
-        workouts.data.forEach((w) => {
-          allEvents.push({
-            id: `workout-${w.id}`,
-            title: w.workout_name,
-            date: new Date(w.workout_date + 'T00:00:00'),
-            category: 'workout',
-            color: categoryColors.workout,
-            data: w,
-          });
-        });
-      }
-
-      if (plannedWorkouts.data) {
-        plannedWorkouts.data.forEach((pw) => {
-          const dates = getDatesForDayOfWeek(pw.day_of_week, year, month);
-          dates.forEach((date) => {
-            allEvents.push({
-              id: `planned-workout-${pw.id}-${date.getTime()}`,
-              title: `${pw.workout_name} (Planned)`,
-              date,
-              category: 'workout',
-              color: categoryColors.workout,
-              data: pw,
-            });
-          });
-        });
-      }
-
-      if (skincareLogs.data) {
-        skincareLogs.data.forEach((sl) => {
-          allEvents.push({
-            id: `skincare-log-${sl.id}`,
-            title: `Skincare ${sl.time_of_day}`,
-            date: new Date(sl.log_date + 'T00:00:00'),
-            category: 'skincare',
-            color: categoryColors.skincare,
-            data: sl,
-          });
-        });
-      }
+      console.log('Query results:', {
+        journalEntries: journalEntries.data?.length || 0,
+        journalError: journalEntries.error,
+        dailyPlanner: dailyPlanner.data?.length || 0,
+        mealPlans: mealPlans.data?.length || 0,
+        goals: goals.data?.length || 0,
+        moodEntries: moodEntries.data?.length || 0,
+        userId: user.id
+      });
 
       if (journalEntries.data) {
         journalEntries.data.forEach((je) => {
@@ -183,32 +118,6 @@ export default function Calendar() {
             category: 'journal',
             color: categoryColors.journal,
             data: je,
-          });
-        });
-      }
-
-      if (achievements.data) {
-        achievements.data.forEach((a) => {
-          allEvents.push({
-            id: `achievement-${a.id}`,
-            title: a.win_description.substring(0, 30),
-            date: new Date(a.achievement_date + 'T00:00:00'),
-            category: 'achievement',
-            color: categoryColors.achievement,
-            data: a,
-          });
-        });
-      }
-
-      if (hobbyLogs.data) {
-        hobbyLogs.data.forEach((hl) => {
-          allEvents.push({
-            id: `hobby-log-${hl.id}`,
-            title: 'Hobby Session',
-            date: new Date(hl.log_date + 'T00:00:00'),
-            category: 'hobby',
-            color: categoryColors.hobby,
-            data: hl,
           });
         });
       }
