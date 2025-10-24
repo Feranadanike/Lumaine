@@ -16,7 +16,7 @@ export default function AICoach() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm your Lumaine AI Coach. I'm here to help you with fitness, skincare, wellness, goals, and more. How can I support you today?",
+      content: "Hi! I'm your Lumaine Coach. I'm here to help you with fitness, skincare, wellness, goals, and more. How can I support you today?",
       timestamp: new Date(),
     },
   ]);
@@ -308,7 +308,7 @@ export default function AICoach() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
           <Bot className="h-8 w-8 text-purple-500" />
-          AI Coach
+          Lumaine Coach
         </h1>
         <p className="text-slate-600 mt-1">Your 24/7 personal wellness assistant</p>
       </div>
@@ -320,7 +320,7 @@ export default function AICoach() {
               <Sparkles className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="font-bold text-lg">Lumaine AI Coach</h2>
+              <h2 className="font-bold text-lg">Lumaine Coach</h2>
               <p className="text-sm opacity-90">Always here to help</p>
             </div>
           </div>

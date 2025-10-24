@@ -63,7 +63,7 @@ const navigationCategories = [
     name: 'Finance & AI',
     items: [
       { id: 'savings', name: 'Savings', icon: PiggyBank },
-      { id: 'coach', name: 'AI Coach', icon: Bot },
+      { id: 'coach', name: 'Lumaine Coach', icon: Bot },
       { id: 'profile', name: 'Profile', icon: User },
     ]
   },
