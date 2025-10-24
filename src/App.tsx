@@ -22,6 +22,7 @@ import Analytics from './components/Analytics';
 import Notes from './components/Notes';
 import MealPrep from './components/MealPrep';
 import MoodDiary from './components/MoodDiary';
+import Wallet from './components/Wallet';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -64,6 +65,7 @@ function AppContent() {
       {currentView === 'analytics' && <Analytics />}
       {currentView === 'notes' && <Notes />}
       {currentView === 'mooddiary' && <MoodDiary />}
+      {currentView === 'wallet' && <Wallet />}
     </Layout>
   );
 }

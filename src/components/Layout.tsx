@@ -22,7 +22,8 @@ import {
   Trophy,
   TrendingUp,
   FileText,
-  ChefHat
+  ChefHat,
+  Wallet
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -59,6 +60,7 @@ const navigationCategories = [
       { id: 'journal', name: 'Journal', icon: BookOpen },
       { id: 'mooddiary', name: 'Mood Diary', icon: Heart },
       { id: 'notes', name: 'Quick Notes', icon: FileText },
+      { id: 'wallet', name: 'Wallet', icon: Wallet },
       { id: 'hobbies', name: 'Hobbies', icon: Smile },
       { id: 'links', name: 'Saved Links', icon: Bookmark },
       { id: 'entertainment', name: 'Entertainment', icon: Film },
