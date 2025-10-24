@@ -141,7 +141,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
   };
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getColorClasses('light')} via-white to-slate-50`}>
+    <div className={`h-screen overflow-hidden bg-gradient-to-br ${getColorClasses('light')} via-white to-slate-50`}>
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm lg:hidden">
         <div className="px-4 sm:px-6">
           <div className="flex justify-between items-center h-16">
@@ -235,14 +235,14 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
         )}
       </nav>
 
-      <div className="flex">
-        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-slate-200 shadow-sm">
-          <div className="flex items-center h-16 px-6 border-b border-slate-200">
+      <div className="flex h-full">
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:h-screen bg-white border-r border-slate-200 shadow-sm">
+          <div className="flex items-center h-16 px-6 border-b border-slate-200 flex-shrink-0">
             <Heart className={`h-8 w-8 ${getColorClasses('text')}`} />
             <span className="ml-2 text-xl font-bold text-slate-900">LumiBud</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-4 px-4 pb-20">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-4 pb-4" style={{ scrollbarGutter: 'stable' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 mb-4 ${
@@ -309,12 +309,14 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
           </div>
         </aside>
 
-        <main className="flex-1 lg:pl-64">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="hidden lg:flex justify-end mb-4">
-              <CalendarWidget onDateAction={handleDateAction} />
+        <main className="flex-1 lg:pl-64 h-full overflow-y-auto">
+          <div className="min-h-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="hidden lg:flex justify-end mb-4">
+                <CalendarWidget onDateAction={handleDateAction} />
+              </div>
+              {children}
             </div>
-            {children}
           </div>
         </main>
       </div>
