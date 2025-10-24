@@ -41,7 +41,24 @@ const CONTEXT_FACTORS = [
 
 export default function MoodDiary() {
   const { user } = useAuth();
-  const { getColorClasses } = useTheme();
+  const { accentColor } = useTheme();
+
+  const getColorClasses = (type: 'bg' | 'text') => {
+    const colorMap: Record<string, Record<string, string>> = {
+      rose: { bg: 'bg-rose-400', text: 'text-rose-600' },
+      pink: { bg: 'bg-pink-400', text: 'text-pink-600' },
+      purple: { bg: 'bg-purple-400', text: 'text-purple-600' },
+      blue: { bg: 'bg-blue-400', text: 'text-blue-600' },
+      cyan: { bg: 'bg-cyan-400', text: 'text-cyan-600' },
+      teal: { bg: 'bg-teal-400', text: 'text-teal-600' },
+      green: { bg: 'bg-green-400', text: 'text-green-600' },
+      amber: { bg: 'bg-amber-400', text: 'text-amber-600' },
+      emerald: { bg: 'bg-emerald-400', text: 'text-emerald-600' },
+      indigo: { bg: 'bg-indigo-400', text: 'text-indigo-600' },
+    };
+    return colorMap[accentColor]?.[type] || colorMap.rose[type];
+  };
+
   const [showForm, setShowForm] = useState(false);
   const [selectedEmotions, setSelectedEmotions] = useState<string[]>([]);
   const [selectedContexts, setSelectedContexts] = useState<string[]>([]);
