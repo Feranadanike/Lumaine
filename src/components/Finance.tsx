@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, X, Wallet, CreditCard, RefreshCw, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { Plus, X, Wallet, CreditCard, RefreshCw, Calendar, DollarSign, AlertCircle, Edit2, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { SavingsGoal, Bill, Subscription } from '../types';
@@ -24,6 +24,9 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
   const [showSubscriptionForm, setShowSubscriptionForm] = useState(false);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
+  const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
+  const [editingBill, setEditingBill] = useState<Bill | null>(null);
+  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
 
   const [newGoal, setNewGoal] = useState({
     goal_name: '',
@@ -249,6 +252,158 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
     }
   };
 
+  const handleEditGoal = (goal: SavingsGoal) => {
+    setEditingGoal(goal);
+    setNewGoal({
+      goal_name: goal.goal_name,
+      target_amount: goal.target_amount,
+      target_date: goal.target_date || '',
+    });
+    setShowGoalForm(true);
+  };
+
+  const handleUpdateGoal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !editingGoal) return;
+
+    try {
+      const { error } = await supabase
+        .from('savings_goals')
+        .update({
+          goal_name: newGoal.goal_name,
+          target_amount: newGoal.target_amount,
+          target_date: newGoal.target_date || null,
+        })
+        .eq('id', editingGoal.id);
+
+      if (error) throw error;
+
+      await loadData();
+      setNewGoal({ goal_name: '', target_amount: 0, target_date: '' });
+      setShowGoalForm(false);
+      setEditingGoal(null);
+    } catch (error) {
+      console.error('Error updating goal:', error);
+    }
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    if (!confirm('Are you sure you want to delete this savings goal? All transactions will also be deleted.')) return;
+
+    try {
+      const { error } = await supabase.from('savings_goals').delete().eq('id', goalId);
+
+      if (error) throw error;
+
+      setGoals(goals.filter((g) => g.id !== goalId));
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+    }
+  };
+
+  const handleEditBill = (bill: Bill) => {
+    setEditingBill(bill);
+    setNewBill({
+      bill_name: bill.bill_name,
+      amount: bill.amount,
+      due_day: bill.due_day,
+      category: bill.category,
+      is_autopay: bill.is_autopay,
+      notes: bill.notes || '',
+    });
+    setShowBillForm(true);
+  };
+
+  const handleUpdateBill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !editingBill) return;
+
+    try {
+      const { error } = await supabase
+        .from('bills')
+        .update({
+          bill_name: newBill.bill_name,
+          amount: newBill.amount,
+          due_day: newBill.due_day,
+          category: newBill.category,
+          is_autopay: newBill.is_autopay,
+          notes: newBill.notes,
+        })
+        .eq('id', editingBill.id);
+
+      if (error) throw error;
+
+      await loadData();
+      setNewBill({ bill_name: '', amount: 0, due_day: 1, category: 'utilities', is_autopay: false, notes: '' });
+      setShowBillForm(false);
+      setEditingBill(null);
+    } catch (error) {
+      console.error('Error updating bill:', error);
+    }
+  };
+
+  const handleDeleteBill = async (billId: string) => {
+    if (!confirm('Are you sure you want to delete this bill?')) return;
+
+    try {
+      const { error } = await supabase.from('bills').update({ is_active: false }).eq('id', billId);
+
+      if (error) throw error;
+
+      setBills(bills.filter((b) => b.id !== billId));
+    } catch (error) {
+      console.error('Error deleting bill:', error);
+    }
+  };
+
+  const handleEditSubscription = (sub: Subscription) => {
+    setEditingSubscription(sub);
+    setNewSubscription({
+      service_name: sub.service_name,
+      amount: sub.amount,
+      billing_cycle: sub.billing_cycle,
+      next_billing_date: sub.next_billing_date,
+      category: sub.category,
+      notes: sub.notes || '',
+    });
+    setShowSubscriptionForm(true);
+  };
+
+  const handleUpdateSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !editingSubscription) return;
+
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({
+          service_name: newSubscription.service_name,
+          amount: newSubscription.amount,
+          billing_cycle: newSubscription.billing_cycle,
+          next_billing_date: newSubscription.next_billing_date,
+          category: newSubscription.category,
+          notes: newSubscription.notes,
+        })
+        .eq('id', editingSubscription.id);
+
+      if (error) throw error;
+
+      await loadData();
+      setNewSubscription({
+        service_name: '',
+        amount: 0,
+        billing_cycle: 'monthly',
+        next_billing_date: '',
+        category: 'entertainment',
+        notes: '',
+      });
+      setShowSubscriptionForm(false);
+      setEditingSubscription(null);
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+    }
+  };
+
   const calculateProgress = (goal: SavingsGoal) => {
     return Math.min((goal.current_amount / goal.target_amount) * 100, 100);
   };
@@ -372,11 +527,27 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                           ${goal.current_amount.toFixed(2)} / ${goal.target_amount.toFixed(2)}
                         </p>
                       </div>
-                      {goal.is_completed && (
-                        <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
-                          Completed
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {goal.is_completed && (
+                          <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium">
+                            Completed
+                          </span>
+                        )}
+                        <button
+                          onClick={() => handleEditGoal(goal)}
+                          className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit goal"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteGoal(goal.id)}
+                          className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete goal"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mb-4">
@@ -446,12 +617,28 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handlePayBill(bill.id)}
-                        className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-100 font-medium transition-colors text-sm"
-                      >
-                        Mark Paid
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handlePayBill(bill.id)}
+                          className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg hover:bg-emerald-100 font-medium transition-colors text-sm"
+                        >
+                          Mark Paid
+                        </button>
+                        <button
+                          onClick={() => handleEditBill(bill)}
+                          className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit bill"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBill(bill.id)}
+                          className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete bill"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -497,12 +684,21 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                           </div>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleCancelSubscription(sub.id)}
-                        className="bg-red-50 text-red-700 px-4 py-2 rounded-lg hover:bg-red-100 font-medium transition-colors text-sm"
-                      >
-                        Cancel
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleEditSubscription(sub)}
+                          className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit subscription"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleCancelSubscription(sub.id)}
+                          className="bg-red-50 text-red-700 px-4 py-2 rounded-lg hover:bg-red-100 font-medium transition-colors text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -515,12 +711,21 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-slate-900">New Savings Goal</h2>
-              <button onClick={() => setShowGoalForm(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-2xl font-bold text-slate-900">
+                {editingGoal ? 'Edit Savings Goal' : 'New Savings Goal'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowGoalForm(false);
+                  setEditingGoal(null);
+                  setNewGoal({ goal_name: '', target_amount: 0, target_date: '' });
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <form onSubmit={handleAddGoal} className="space-y-4">
+            <form onSubmit={editingGoal ? handleUpdateGoal : handleAddGoal} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Goal Name</label>
                 <input
@@ -558,7 +763,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 type="submit"
                 className="w-full bg-emerald-500 text-white py-3 rounded-lg hover:bg-emerald-600 font-medium transition-colors shadow-lg"
               >
-                Create Goal
+                {editingGoal ? 'Update Goal' : 'Create Goal'}
               </button>
             </form>
           </div>
@@ -569,12 +774,19 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-slate-900">New Bill</h2>
-              <button onClick={() => setShowBillForm(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-2xl font-bold text-slate-900">{editingBill ? 'Edit Bill' : 'New Bill'}</h2>
+              <button
+                onClick={() => {
+                  setShowBillForm(false);
+                  setEditingBill(null);
+                  setNewBill({ bill_name: '', amount: 0, due_day: 1, category: 'utilities', is_autopay: false, notes: '' });
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <form onSubmit={handleAddBill} className="space-y-4">
+            <form onSubmit={editingBill ? handleUpdateBill : handleAddBill} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Bill Name</label>
                 <input
@@ -647,7 +859,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 type="submit"
                 className="w-full bg-emerald-500 text-white py-3 rounded-lg hover:bg-emerald-600 font-medium transition-colors shadow-lg"
               >
-                Add Bill
+                {editingBill ? 'Update Bill' : 'Add Bill'}
               </button>
             </form>
           </div>
@@ -658,12 +870,28 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-slate-900">New Subscription</h2>
-              <button onClick={() => setShowSubscriptionForm(false)} className="text-slate-400 hover:text-slate-600">
+              <h2 className="text-2xl font-bold text-slate-900">
+                {editingSubscription ? 'Edit Subscription' : 'New Subscription'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowSubscriptionForm(false);
+                  setEditingSubscription(null);
+                  setNewSubscription({
+                    service_name: '',
+                    amount: 0,
+                    billing_cycle: 'monthly',
+                    next_billing_date: '',
+                    category: 'entertainment',
+                    notes: '',
+                  });
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <form onSubmit={handleAddSubscription} className="space-y-4">
+            <form onSubmit={editingSubscription ? handleUpdateSubscription : handleAddSubscription} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Service Name</label>
                 <input
@@ -742,7 +970,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 type="submit"
                 className="w-full bg-emerald-500 text-white py-3 rounded-lg hover:bg-emerald-600 font-medium transition-colors shadow-lg"
               >
-                Add Subscription
+                {editingSubscription ? 'Update Subscription' : 'Add Subscription'}
               </button>
             </form>
           </div>
