@@ -242,36 +242,36 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
             <span className="ml-2 text-xl font-bold text-slate-900">LumiBud</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-4 px-4 pb-4" style={{ scrollbarGutter: 'stable' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 pb-4" style={{ scrollbarGutter: 'stable' }}>
             <button
               onClick={() => onViewChange('home')}
-              className={`w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 mb-4 ${
+              className={`w-full flex items-center px-5 py-4 rounded-2xl text-lg font-bold transition-all duration-200 mb-6 ${
                 currentView === 'home'
-                  ? `bg-gradient-to-r ${getColorClasses('gradient')} text-white shadow-lg`
-                  : `bg-gradient-to-r ${getColorClasses('light')} ${getColorClasses('text')} ${getColorClasses('hover')} shadow-sm`
+                  ? `bg-gradient-to-r ${getColorClasses('gradient')} text-white shadow-xl`
+                  : `bg-gradient-to-r ${getColorClasses('light')} ${getColorClasses('text')} ${getColorClasses('hover')} shadow-md`
               }`}
             >
-              <Home className="h-6 w-6 mr-3" />
+              <Home className="h-7 w-7 mr-4" />
               Home
             </button>
-            <div className="space-y-2">
+            <div className="space-y-3">
             {navigationCategories.map((category) => {
               const isExpanded = expandedSections.has(category.name);
               return (
                 <div key={category.name}>
                   <button
                     onClick={() => toggleSection(category.name)}
-                    className="w-full flex items-center justify-between px-2 py-2 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 hover:bg-slate-50 transition-all duration-200 uppercase tracking-wider"
+                    className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-all duration-200 uppercase tracking-wide"
                   >
                     <span>{category.name}</span>
-                    {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      isExpanded ? 'max-h-[1000px] opacity-100 mt-1 mb-2' : 'max-h-0 opacity-0'
+                      isExpanded ? 'max-h-[1000px] opacity-100 mt-2 mb-3' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="space-y-1 pl-2">
+                    <div className="space-y-2 pl-1">
                       {category.items.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentView === item.id;
@@ -279,13 +279,13 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                           <button
                             key={item.id}
                             onClick={() => onViewChange(item.id)}
-                            className={`w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            className={`w-full flex items-center px-4 py-3.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                               isActive
-                                ? `${getColorClasses('bg')} text-white shadow-md`
-                                : `text-slate-600 ${getColorClasses('hover')}`
+                                ? `${getColorClasses('bg')} text-white shadow-lg`
+                                : `text-slate-700 ${getColorClasses('hover')}`
                             }`}
                           >
-                            <Icon className="h-5 w-5 mr-3" />
+                            <Icon className="h-6 w-6 mr-3.5" />
                             {item.name}
                           </button>
                         );
@@ -298,12 +298,12 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
             </div>
           </div>
 
-          <div className="p-4 border-t border-slate-200">
+          <div className="p-5 border-t border-slate-200 flex-shrink-0">
             <button
               onClick={handleSignOut}
-              className="w-full flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+              className="w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 shadow-sm hover:shadow-md"
             >
-              <LogOut className="h-5 w-5 mr-3" />
+              <LogOut className="h-6 w-6 mr-3" />
               Sign Out
             </button>
           </div>
