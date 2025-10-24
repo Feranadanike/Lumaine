@@ -1,7 +1,40 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, X, Calendar, Target, Heart, Book, FileText, DollarSign, Dumbbell, Film, Bookmark, ChefHat, Users } from 'lucide-react';
+import {
+  Search, X, Calendar, Target, Heart, Book, FileText, DollarSign,
+  Dumbbell, Film, Bookmark, ChefHat, Users, Home, Droplet, PiggyBank,
+  CreditCard, RefreshCw, BookOpen, Smile, BarChart3, Trophy, TrendingUp,
+  Bot, User as UserIcon, Camera, Wallet
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+
+const navigationItems = [
+  { id: 'home', name: 'Home', icon: Home },
+  { id: 'insights', name: 'Insights', icon: BarChart3 },
+  { id: 'analytics', name: 'Analytics', icon: TrendingUp },
+  { id: 'goals', name: 'Goals', icon: Target },
+  { id: 'achievements', name: 'Achievements', icon: Trophy },
+  { id: 'skincare', name: 'Skincare', icon: Droplet },
+  { id: 'gym', name: 'Gym', icon: Dumbbell },
+  { id: 'mealprep', name: 'Meal Prep', icon: ChefHat },
+  { id: 'wellness', name: 'Wellness', icon: Heart },
+  { id: 'planner', name: 'Planner', icon: Calendar },
+  { id: 'journal', name: 'Journal', icon: BookOpen },
+  { id: 'mooddiary', name: 'Mood Diary', icon: Heart },
+  { id: 'notes', name: 'Quick Notes', icon: FileText },
+  { id: 'wallet', name: 'Wallet', icon: Wallet },
+  { id: 'hobbies', name: 'Hobbies', icon: Smile },
+  { id: 'links', name: 'Saved Links', icon: Bookmark },
+  { id: 'entertainment', name: 'Entertainment', icon: Film },
+  { id: 'memories', name: 'Memories', icon: Camera },
+  { id: 'books', name: 'Reading List', icon: Book },
+  { id: 'relationships', name: 'Relationships', icon: Users },
+  { id: 'savings', name: 'Savings', icon: PiggyBank },
+  { id: 'bills', name: 'Bills', icon: CreditCard },
+  { id: 'subscriptions', name: 'Subscriptions', icon: RefreshCw },
+  { id: 'coach', name: 'LumiBud Coach', icon: Bot },
+  { id: 'profile', name: 'Profile', icon: UserIcon },
+];
 
 interface SearchResult {
   id: string;
@@ -27,13 +60,33 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const searchAllData = useCallback(async (searchQuery: string) => {
-    if (!user || !searchQuery.trim()) {
+    if (!searchQuery.trim()) {
       setResults([]);
       return;
     }
 
     setLoading(true);
     const allResults: SearchResult[] = [];
+    const lowerQuery = searchQuery.toLowerCase();
+
+    navigationItems.forEach(item => {
+      if (item.name.toLowerCase().includes(lowerQuery)) {
+        allResults.push({
+          id: item.id,
+          type: 'Page',
+          title: item.name,
+          description: 'Navigate to this page',
+          icon: item.icon,
+          view: item.id,
+        });
+      }
+    });
+
+    if (!user) {
+      setResults(allResults);
+      setLoading(false);
+      return;
+    }
 
     try {
       const searches = [
@@ -306,7 +359,7 @@ export default function GlobalSearch({ isOpen, onClose, onNavigate }: GlobalSear
           <Search className="h-5 w-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search journals, goals, workouts, recipes, bills..."
+            placeholder="Search pages, journals, goals, workouts, recipes..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="flex-1 bg-transparent border-none outline-none text-slate-900 dark:text-white placeholder-slate-400"
