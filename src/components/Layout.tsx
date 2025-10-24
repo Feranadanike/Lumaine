@@ -74,7 +74,7 @@ const navigationCategories = [
   {
     name: 'AI & Profile',
     items: [
-      { id: 'coach', name: 'Lumaine Coach', icon: Bot },
+      { id: 'coach', name: 'LumiBud Coach', icon: Bot },
       { id: 'profile', name: 'Profile', icon: User },
     ]
   },
@@ -112,7 +112,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Heart className={`h-8 w-8 ${getColorClasses('text')}`} />
-              <span className="ml-2 text-xl font-bold text-slate-900">Lumaine</span>
+              <span className="ml-2 text-xl font-bold text-slate-900">LumiBud</span>
             </div>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

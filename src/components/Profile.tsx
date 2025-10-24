@@ -190,7 +190,7 @@ export default function Profile() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lumaine-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `lumibud-export-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -227,7 +227,7 @@ export default function Profile() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `lumaine-export-${new Date().toISOString().split('T')[0]}.csv`;
+      a.download = `lumibud-export-${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -401,7 +401,7 @@ export default function Profile() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold">{profile.display_name || 'Lumaine User'}</h2>
+                  <h2 className="text-2xl font-bold">{profile.display_name || 'LumiBud User'}</h2>
                   <button
                     onClick={() => setEditingUsername(true)}
                     className="p-1.5 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-colors"
@@ -594,7 +594,7 @@ export default function Profile() {
           Theme Customization
         </h3>
         <p className="text-slate-600 mb-6">
-          Personalize your Lumaine experience with your favorite colors and fonts
+          Personalize your LumiBud experience with your favorite colors and fonts
         </p>
 
         <div className="space-y-8">

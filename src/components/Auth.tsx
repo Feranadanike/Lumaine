@@ -56,7 +56,7 @@ export default function Auth() {
           <div className="flex justify-center mb-4">
             <Heart className="h-16 w-16 text-rose-400" />
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Lumaine</h1>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">LumiBud</h1>
           <p className="text-slate-600">Your personal growth companion</p>
         </div>
 

@@ -16,7 +16,7 @@ export default function AICoach() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm your Lumaine Coach. I'm here to help you with fitness, skincare, wellness, goals, and more. How can I support you today?",
+      content: "Hi! I'm your LumiBud Coach. I'm here to help you with fitness, skincare, wellness, goals, and more. How can I support you today?",
       timestamp: new Date(),
     },
   ]);
@@ -308,7 +308,7 @@ export default function AICoach() {
       <div>
         <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
           <Bot className="h-8 w-8 text-purple-500" />
-          Lumaine Coach
+          LumiBud Coach
         </h1>
         <p className="text-slate-600 mt-1">Your 24/7 personal wellness assistant</p>
       </div>

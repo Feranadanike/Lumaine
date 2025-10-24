@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const systemPrompt = `You are Lumaine Coach, a supportive and motivational personal wellness assistant. You help users with:
+    const systemPrompt = `You are LumiBud Coach, a supportive and motivational personal wellness assistant. You help users with:
 - Fitness and workout guidance
 - Skincare routines and advice
 - Mental health and journaling
