@@ -266,7 +266,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 pb-24" style={{ scrollbarGutter: 'stable' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4" style={{ scrollbarGutter: 'stable', maxHeight: 'calc(100vh - 8rem - 5rem)' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-4 ${
@@ -345,7 +345,15 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
         <main className="flex-1 lg:pl-64 h-full overflow-y-auto">
           <div className="min-h-full">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="hidden lg:flex justify-end mb-4">
+              <div className="hidden lg:flex justify-between items-center mb-4">
+                <button
+                  onClick={onSearchOpen}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg transition-colors shadow-sm"
+                >
+                  <Search className="h-5 w-5" />
+                  <span className="font-medium">Search</span>
+                  <span className="text-xs bg-white dark:bg-slate-900 px-2 py-1 rounded border border-slate-300 dark:border-slate-600">⌘K</span>
+                </button>
                 <CalendarWidget onDateAction={handleDateAction} />
               </div>
               {children}
