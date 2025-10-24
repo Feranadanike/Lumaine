@@ -266,7 +266,7 @@ export default function Layout({ children, currentView, onViewChange, onSearchOp
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4" style={{ scrollbarGutter: 'stable', maxHeight: 'calc(100vh - 8rem - 5rem)' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4 min-h-0" style={{ scrollbarGutter: 'stable' }}>
             <button
               onClick={() => onViewChange('home')}
               className={`w-full flex items-center px-6 py-5 rounded-2xl text-xl font-bold transition-all duration-200 mb-4 ${
