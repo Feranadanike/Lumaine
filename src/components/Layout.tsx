@@ -51,6 +51,7 @@ const navigationCategories = [
     name: 'Overview',
     items: [
       { id: 'insights', name: 'Insights', icon: BarChart3 },
+      { id: 'smartinsights', name: 'Smart Insights', icon: Bot },
       { id: 'analytics', name: 'Analytics', icon: TrendingUp },
       { id: 'goals', name: 'Goals', icon: Target },
       { id: 'achievements', name: 'Achievements', icon: Trophy },

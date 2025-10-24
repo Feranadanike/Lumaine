@@ -28,6 +28,7 @@ import Memories from './components/Memories';
 import Books from './components/Books';
 import Relationships from './components/Relationships';
 import Routines from './components/Routines';
+import SmartInsights from './components/SmartInsights';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -104,6 +105,7 @@ function AppContent() {
       {currentView === 'memories' && <Memories />}
       {currentView === 'books' && <Books />}
       {currentView === 'relationships' && <Relationships />}
+      {currentView === 'smartinsights' && <SmartInsights />}
       </Layout>
     </>
   );

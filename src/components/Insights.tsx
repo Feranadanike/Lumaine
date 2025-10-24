@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BarChart3, TrendingUp, Award, Sparkles, X, Calendar } from 'lucide-react';
+import { BarChart3, TrendingUp, Award, Sparkles, X, Calendar, Brain } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -35,11 +35,13 @@ export default function Insights() {
   const [aiSummary, setAiSummary] = useState<any>(null);
   const [generatingAI, setGeneratingAI] = useState(false);
   const [dailyActivities, setDailyActivities] = useState<DailyActivity[]>([]);
+  const [smartInsights, setSmartInsights] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
       loadInsights();
       loadActivityData();
+      loadSmartInsights();
     }
   }, [user]);
 
@@ -94,6 +96,22 @@ export default function Insights() {
       console.error('Error loading insights:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSmartInsights = async () => {
+    try {
+      const { data } = await supabase
+        .from('smart_insights')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('is_dismissed', false)
+        .order('priority', { ascending: false })
+        .limit(5);
+
+      setSmartInsights(data || []);
+    } catch (error) {
+      console.error('Error loading smart insights:', error);
     }
   };
 
@@ -202,11 +220,11 @@ export default function Insights() {
     <div className="space-y-6 md:space-y-8 pb-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <BarChart3 className="h-8 w-8 text-blue-500" />
             Insights
           </h1>
-          <p className="text-slate-600 mt-1">Deep dive into your wellness patterns</p>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Deep dive into your wellness patterns</p>
         </div>
         <button
           onClick={handleGenerateWeeklySummary}
@@ -217,6 +235,30 @@ export default function Insights() {
           {generatingAI ? 'Generating...' : 'AI Weekly Summary'}
         </button>
       </div>
+
+      {smartInsights.length > 0 && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 rounded-2xl p-6 border-2 border-purple-200 dark:border-purple-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Brain className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            Smart Discoveries
+          </h2>
+          <div className="space-y-3">
+            {smartInsights.map(insight => (
+              <div
+                key={insight.id}
+                className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
+              >
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                  {insight.title}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {insight.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showAISummary && aiSummary && (
         <div
