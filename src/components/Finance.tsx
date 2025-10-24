@@ -296,83 +296,59 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
     return <div className="text-center py-8 text-slate-600">Loading...</div>;
   }
 
+  const getHeaderConfig = () => {
+    switch (activeTab) {
+      case 'bills':
+        return {
+          icon: CreditCard,
+          title: 'Bills',
+          description: 'Track and manage your recurring bills',
+          action: () => setShowBillForm(true),
+          actionLabel: 'New Bill',
+        };
+      case 'subscriptions':
+        return {
+          icon: RefreshCw,
+          title: 'Subscriptions',
+          description: 'Manage your subscriptions and recurring payments',
+          action: () => setShowSubscriptionForm(true),
+          actionLabel: 'New Subscription',
+        };
+      default:
+        return {
+          icon: DollarSign,
+          title: 'Savings Goals',
+          description: 'Track your savings goals and progress',
+          action: () => setShowGoalForm(true),
+          actionLabel: 'New Goal',
+        };
+    }
+  };
+
+  const headerConfig = getHeaderConfig();
+  const HeaderIcon = headerConfig.icon;
+
   return (
     <div className="space-y-6 md:space-y-8 pb-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <Wallet className="h-8 w-8 text-emerald-500" />
-            Finance
+            <HeaderIcon className="h-8 w-8 text-emerald-500" />
+            {headerConfig.title}
           </h1>
-          <p className="text-slate-600 mt-1">Manage your savings, bills, and subscriptions</p>
+          <p className="text-slate-600 mt-1">{headerConfig.description}</p>
         </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center">
-            <p className="text-sm text-slate-600">Monthly Bills</p>
-            <p className="text-2xl font-bold text-slate-900">${getTotalMonthlyBills().toFixed(2)}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-slate-600">Subscriptions</p>
-            <p className="text-2xl font-bold text-slate-900">${getTotalMonthlySubscriptions().toFixed(2)}</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-slate-600">Total Monthly</p>
-            <p className="text-2xl font-bold text-emerald-600">
-              ${(getTotalMonthlyBills() + getTotalMonthlySubscriptions()).toFixed(2)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-2 border-b border-slate-200">
-          <button
-            onClick={() => setActiveTab('savings')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'savings'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Savings Goals
-          </button>
-          <button
-            onClick={() => setActiveTab('bills')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'bills'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Bills
-          </button>
-          <button
-            onClick={() => setActiveTab('subscriptions')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'subscriptions'
-                ? 'text-emerald-600 border-b-2 border-emerald-600'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Subscriptions
-          </button>
-        </div>
+        <button
+          onClick={headerConfig.action}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors shadow-lg"
+        >
+          <Plus className="h-5 w-5" />
+          {headerConfig.actionLabel}
+        </button>
       </div>
 
       {activeTab === 'savings' && (
-        <>
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowGoalForm(true)}
-              className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              New Goal
-            </button>
-          </div>
-
-          <div className="grid gap-6">
+        <div className="grid gap-6">
             {goals.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <DollarSign className="h-16 w-16 text-slate-300 mx-auto mb-4" />
@@ -431,23 +407,11 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 );
               })
             )}
-          </div>
-        </>
+        </div>
       )}
 
       {activeTab === 'bills' && (
-        <>
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowBillForm(true)}
-              className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              New Bill
-            </button>
-          </div>
-
-          <div className="grid gap-4">
+        <div className="grid gap-4">
             {bills.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <CreditCard className="h-16 w-16 text-slate-300 mx-auto mb-4" />
@@ -493,23 +457,11 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 );
               })
             )}
-          </div>
-        </>
+        </div>
       )}
 
       {activeTab === 'subscriptions' && (
-        <>
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowSubscriptionForm(true)}
-              className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-colors shadow-lg"
-            >
-              <Plus className="h-5 w-5" />
-              New Subscription
-            </button>
-          </div>
-
-          <div className="grid gap-4">
+        <div className="grid gap-4">
             {subscriptions.length === 0 ? (
               <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                 <RefreshCw className="h-16 w-16 text-slate-300 mx-auto mb-4" />
@@ -556,8 +508,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                 );
               })
             )}
-          </div>
-        </>
+        </div>
       )}
 
       {showGoalForm && (
