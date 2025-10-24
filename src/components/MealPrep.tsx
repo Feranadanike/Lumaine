@@ -507,27 +507,30 @@ export default function MealPrep() {
 
       {view === 'planner' && (
         <>
-          <div className="flex gap-3 justify-end">
+          <div className="flex flex-wrap gap-3 justify-end">
             <button
               onClick={handleGenerateGroceryList}
               className="flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-lg"
             >
               <ShoppingCart className="h-5 w-5" />
-              Generate Grocery List
+              <span className="hidden sm:inline">Generate Grocery List</span>
+              <span className="sm:hidden">Grocery</span>
             </button>
             <button
               onClick={() => setShowAIForm(true)}
               className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-colors shadow-lg"
             >
               <Sparkles className="h-5 w-5" />
-              AI Meal Plan
+              <span className="hidden sm:inline">AI Meal Plan</span>
+              <span className="sm:hidden">AI</span>
             </button>
             <button
               onClick={() => setShowMealPlanForm(true)}
               className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors shadow-lg"
             >
               <Plus className="h-5 w-5" />
-              Add Meal
+              <span className="hidden sm:inline">Add Meal</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
 
