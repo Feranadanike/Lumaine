@@ -241,14 +241,17 @@ export default function Profile() {
 
       if (error) {
         console.error('Delete account error:', error);
-        alert(`Failed to delete account: ${error.message || 'Unknown error'}`);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        alert(`Failed to delete account: ${error.message || 'Unknown error'}\nDetails: ${JSON.stringify(error)}`);
         setIsDeleting(false);
         return;
       }
 
+      console.log('Delete response data:', data);
+
       if (!data?.success) {
         console.error('Delete account failed:', data);
-        alert(`Failed to delete account: ${data?.error || 'Unknown error'}`);
+        alert(`Failed to delete account: ${data?.error || 'Unknown error'}\nDetails: ${data?.details || 'No details'}`);
         setIsDeleting(false);
         return;
       }
