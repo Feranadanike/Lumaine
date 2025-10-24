@@ -242,10 +242,10 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
             <span className="ml-2 text-xl font-bold text-slate-900">LumiBud</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto py-4 px-4">
+          <div className="flex-1 overflow-y-auto py-4 px-4 pb-20">
             <button
               onClick={() => onViewChange('home')}
-              className={`w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 mb-6 ${
+              className={`w-full flex items-center px-4 py-3 rounded-xl text-base font-semibold transition-all duration-200 mb-4 ${
                 currentView === 'home'
                   ? `bg-gradient-to-r ${getColorClasses('gradient')} text-white shadow-lg`
                   : `bg-gradient-to-r ${getColorClasses('light')} ${getColorClasses('text')} ${getColorClasses('hover')} shadow-sm`
@@ -268,7 +268,7 @@ export default function Layout({ children, currentView, onViewChange }: LayoutPr
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                      isExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                      isExpanded ? 'max-h-[1000px] opacity-100 mt-1 mb-2' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div className="space-y-1 pl-2">
