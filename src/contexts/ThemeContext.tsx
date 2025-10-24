@@ -5,8 +5,10 @@ import { useAuth } from './AuthContext';
 interface ThemeContextType {
   accentColor: string;
   font: string;
+  darkMode: boolean;
   setAccentColor: (color: string) => void;
   setFont: (font: string) => void;
+  toggleDarkMode: () => void;
   updateTheme: (color: string, font: string) => Promise<void>;
 }
 
@@ -47,6 +49,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const { user } = useAuth();
   const [accentColor, setAccentColorState] = useState('purple');
   const [font, setFontState] = useState('sans');
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -54,19 +57,24 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     } else {
       const savedColor = localStorage.getItem('accentColor');
       const savedFont = localStorage.getItem('font');
+      const savedDarkMode = localStorage.getItem('darkMode');
       if (savedColor && accentColors[savedColor as keyof typeof accentColors]) {
         setAccentColorState(savedColor);
       }
       if (savedFont && fonts[savedFont as keyof typeof fonts]) {
         setFontState(savedFont);
       }
+      if (savedDarkMode !== null) {
+        setDarkMode(savedDarkMode === 'true');
+      }
     }
   }, [user]);
 
   useEffect(() => {
     const fontClass = fonts[font as keyof typeof fonts]?.class || 'font-sans';
-    document.documentElement.className = fontClass;
-  }, [font]);
+    const darkClass = darkMode ? 'dark' : '';
+    document.documentElement.className = `${fontClass} ${darkClass}`.trim();
+  }, [font, darkMode]);
 
   const loadUserTheme = async () => {
     try {
@@ -100,6 +108,14 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     }
   };
 
+  const toggleDarkMode = () => {
+    setDarkMode(prev => {
+      const newValue = !prev;
+      localStorage.setItem('darkMode', String(newValue));
+      return newValue;
+    });
+  };
+
   const updateTheme = async (color: string, newFont: string) => {
     if (!user) return;
 
@@ -124,7 +140,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   };
 
   return (
-    <ThemeContext.Provider value={{ accentColor, font, setAccentColor, setFont, updateTheme }}>
+    <ThemeContext.Provider value={{ accentColor, font, darkMode, setAccentColor, setFont, toggleDarkMode, updateTheme }}>
       {children}
     </ThemeContext.Provider>
   );

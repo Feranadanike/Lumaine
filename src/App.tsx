@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Auth from './components/Auth';
 import Layout from './components/Layout';
+import GlobalSearch from './components/GlobalSearch';
 import Home from './components/Home';
 import Profile from './components/Profile';
 import AICoach from './components/AICoach';
@@ -31,11 +32,24 @@ function AppContent() {
   const { user, loading } = useAuth();
   const [currentView, setCurrentView] = useState('home');
   const [selectedDate, setSelectedDate] = useState<string | undefined>();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleViewChange = (view: string, date?: string) => {
     setCurrentView(view);
     setSelectedDate(date);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   console.log('AppContent render - loading:', loading, 'user:', !!user);
 
@@ -52,7 +66,17 @@ function AppContent() {
   }
 
   return (
-    <Layout currentView={currentView} onViewChange={handleViewChange}>
+    <>
+      <GlobalSearch
+        isOpen={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        onNavigate={handleViewChange}
+      />
+      <Layout
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onSearchOpen={() => setSearchOpen(true)}
+      >
       {currentView === 'home' && <Home onViewChange={(view) => handleViewChange(view)} />}
       {currentView === 'profile' && <Profile />}
       {currentView === 'coach' && <AICoach />}
@@ -78,7 +102,8 @@ function AppContent() {
       {currentView === 'memories' && <Memories />}
       {currentView === 'books' && <Books />}
       {currentView === 'relationships' && <Relationships />}
-    </Layout>
+      </Layout>
+    </>
   );
 }
 
