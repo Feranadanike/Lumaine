@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Plus, X, Wallet, CreditCard, RefreshCw, Calendar, DollarSign, AlertCircle, Edit2, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { SavingsGoal, Bill, Subscription } from '../types';
+import { SavingsGoal, Bill, Subscription, UserProfile } from '../types';
+import { getCurrencySymbol } from '../lib/currency';
 
 type Tab = 'savings' | 'bills' | 'subscriptions';
 
@@ -18,6 +19,8 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [bills, setBills] = useState<Bill[]>([]);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const currencySymbol = getCurrencySymbol(userProfile?.currency || 'USD');
 
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showBillForm, setShowBillForm] = useState(false);
@@ -66,7 +69,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
 
   const loadData = async () => {
     try {
-      const [goalsRes, billsRes, subscriptionsRes] = await Promise.all([
+      const [goalsRes, billsRes, subscriptionsRes, profileRes] = await Promise.all([
         supabase.from('savings_goals').select('*').eq('user_id', user?.id).order('created_at', { ascending: false }),
         supabase.from('bills').select('*').eq('user_id', user?.id).eq('is_active', true).order('due_day'),
         supabase
@@ -75,11 +78,13 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
           .eq('user_id', user?.id)
           .eq('is_active', true)
           .order('next_billing_date'),
+        supabase.from('user_profiles').select('*').eq('id', user?.id).maybeSingle(),
       ]);
 
       if (goalsRes.data) setGoals(goalsRes.data);
       if (billsRes.data) setBills(billsRes.data);
       if (subscriptionsRes.data) setSubscriptions(subscriptionsRes.data);
+      if (profileRes.data) setUserProfile(profileRes.data);
     } catch (error) {
       console.error('Error loading finance data:', error);
     } finally {
@@ -524,7 +529,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                       <div>
                         <h3 className="text-xl font-bold text-slate-900">{goal.goal_name}</h3>
                         <p className="text-sm text-slate-600 mt-1">
-                          ${goal.current_amount.toFixed(2)} / ${goal.target_amount.toFixed(2)}
+                          {currencySymbol}{goal.current_amount.toFixed(2)} / {currencySymbol}{goal.target_amount.toFixed(2)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -606,7 +611,7 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                         <p className="text-sm text-slate-600 capitalize mt-1">{bill.category}</p>
                         <div className="flex items-center gap-4 mt-3">
                           <div>
-                            <p className="text-2xl font-bold text-slate-900">${bill.amount.toFixed(2)}</p>
+                            <p className="text-2xl font-bold text-slate-900">{currencySymbol}{bill.amount.toFixed(2)}</p>
                           </div>
                           <div className="flex items-center gap-1 text-sm">
                             <Calendar className="h-4 w-4" />
@@ -672,11 +677,11 @@ export default function Finance({ defaultTab = 'savings' }: FinanceProps) {
                         <div className="flex items-center gap-6 mt-3">
                           <div>
                             <p className="text-xs text-slate-500">Per {sub.billing_cycle}</p>
-                            <p className="text-xl font-bold text-slate-900">${sub.amount.toFixed(2)}</p>
+                            <p className="text-xl font-bold text-slate-900">{currencySymbol}{sub.amount.toFixed(2)}</p>
                           </div>
                           <div>
                             <p className="text-xs text-slate-500">Monthly equivalent</p>
-                            <p className="text-lg font-semibold text-slate-700">${monthlyAmount.toFixed(2)}</p>
+                            <p className="text-lg font-semibold text-slate-700">{currencySymbol}{monthlyAmount.toFixed(2)}</p>
                           </div>
                           <div className="flex items-center gap-1 text-sm text-slate-600">
                             <Calendar className="h-4 w-4" />

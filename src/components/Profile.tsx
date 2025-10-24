@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2, Edit2, Check, X } from 'lucide-react';
+import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2, Edit2, Check, X, DollarSign } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { CURRENCIES } from '../lib/currency';
 
 interface UserProfile {
   id: string;
@@ -35,6 +36,7 @@ export default function Profile() {
   const { accentColor, font, updateTheme } = useTheme();
   const [selectedColor, setSelectedColor] = useState('purple');
   const [selectedFont, setSelectedFont] = useState('sans');
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState<Achievement[]>([]);
@@ -55,6 +57,12 @@ export default function Profile() {
     setSelectedColor(accentColor);
     setSelectedFont(font);
   }, [accentColor, font]);
+
+  useEffect(() => {
+    if (profile?.currency) {
+      setSelectedCurrency(profile.currency);
+    }
+  }, [profile?.currency]);
 
   const loadProfileData = async () => {
     try {
@@ -249,6 +257,22 @@ export default function Profile() {
     } catch (error) {
       console.error('Error updating username:', error);
       alert('Failed to update username');
+    }
+  };
+
+  const handleUpdateCurrency = async () => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({ currency: selectedCurrency })
+        .eq('id', user?.id);
+
+      if (error) throw error;
+
+      alert('Currency updated successfully!');
+    } catch (error) {
+      console.error('Error updating currency:', error);
+      alert('Failed to update currency');
     }
   };
 
@@ -644,6 +668,38 @@ export default function Profile() {
                 </button>
               ))}
             </div>
+          </div>
+
+          <div>
+            <h4 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-emerald-600" />
+              Currency
+            </h4>
+            <p className="text-sm text-slate-600 mb-4">
+              Select your preferred currency for financial tracking
+            </p>
+            <select
+              value={selectedCurrency}
+              onChange={(e) => setSelectedCurrency(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-400 focus:border-purple-400 transition-all text-slate-900 font-medium"
+            >
+              {CURRENCIES.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.symbol} - {currency.name} ({currency.code})
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleUpdateCurrency}
+              disabled={selectedCurrency === profile?.currency}
+              className={`mt-4 w-full sm:w-auto px-8 py-3 rounded-xl font-semibold transition-all ${
+                selectedCurrency === profile?.currency
+                  ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+              }`}
+            >
+              {selectedCurrency === profile?.currency ? 'Currency Applied' : 'Update Currency'}
+            </button>
           </div>
 
           <div className="pt-4 border-t border-slate-200">
