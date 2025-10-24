@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette } from 'lucide-react';
+import { User, Award, Trophy, Zap, Target, TrendingUp, Crown, Star, Flame, Calendar, Download, Palette, AlertTriangle, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -31,7 +31,7 @@ interface Achievement {
 }
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { accentColor, font, updateTheme } = useTheme();
   const [selectedColor, setSelectedColor] = useState('purple');
   const [selectedFont, setSelectedFont] = useState('sans');
@@ -39,6 +39,9 @@ export default function Profile() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [unlockedAchievements, setUnlockedAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -221,6 +224,49 @@ export default function Profile() {
     } catch (error) {
       console.error('Error exporting data:', error);
       alert('Failed to export data');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      alert('Please type DELETE to confirm');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const tables = [
+        'user_achievements',
+        'workout_sessions',
+        'skincare_logs',
+        'journal_entries',
+        'hobby_logs',
+        'goals',
+        'savings_goals',
+        'saved_links',
+        'entertainment_items',
+        'user_profiles'
+      ];
+
+      for (const table of tables) {
+        await supabase.from(table).delete().eq('user_id', user?.id);
+      }
+
+      const { error: authError } = await supabase.auth.admin.deleteUser(user?.id || '');
+
+      if (authError) {
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) throw signOutError;
+
+        alert('Account data deleted. Please contact support to complete account deletion.');
+      } else {
+        await signOut();
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account. Please try again or contact support.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -554,6 +600,89 @@ export default function Profile() {
           </button>
         </div>
       </div>
+
+      <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl shadow-xl p-6 border-2 border-red-200">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="p-3 bg-red-100 rounded-xl">
+            <AlertTriangle className="h-7 w-7 text-red-600" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-red-900 mb-2">Danger Zone</h3>
+            <p className="text-red-700">
+              Permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
+        >
+          <Trash2 className="h-5 w-5" />
+          Delete Account
+        </button>
+      </div>
+
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-4 mb-6">
+              <div className="p-3 bg-red-100 rounded-xl">
+                <AlertTriangle className="h-8 w-8 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2">Delete Account?</h2>
+                <p className="text-slate-600">
+                  This will permanently delete your account and all your data including workouts, journal entries, goals, and achievements.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-yellow-800 font-medium mb-3">
+                Before deleting, we recommend exporting your data using the buttons above.
+              </p>
+              <p className="text-sm text-slate-700 font-semibold">
+                Type <span className="text-red-600 font-bold">DELETE</span> to confirm:
+              </p>
+            </div>
+
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="Type DELETE here"
+              disabled={isDeleting}
+              className="w-full p-3 border-2 border-slate-300 rounded-lg mb-6 font-mono text-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-slate-100 disabled:cursor-not-allowed"
+            />
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeleteConfirmText('');
+                }}
+                disabled={isDeleting}
+                className="flex-1 px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
