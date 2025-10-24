@@ -394,6 +394,38 @@ export default function MealPrep() {
     }
   };
 
+  const handleDeleteGroceryList = async (listId: string) => {
+    if (!confirm('Delete this grocery list and all its items?')) return;
+
+    try {
+      const { error } = await supabase.from('grocery_lists').delete().eq('id', listId).eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      setGroceryLists(groceryLists.filter((list) => list.id !== listId));
+      if (selectedGroceryList === listId) {
+        setSelectedGroceryList(null);
+        setSelectedGroceryItems([]);
+      }
+    } catch (error) {
+      console.error('Error deleting grocery list:', error);
+      alert('Failed to delete grocery list');
+    }
+  };
+
+  const handleDeleteGroceryItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase.from('grocery_items').delete().eq('id', itemId);
+
+      if (error) throw error;
+
+      setSelectedGroceryItems(selectedGroceryItems.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error('Error deleting grocery item:', error);
+      alert('Failed to delete item');
+    }
+  };
+
   const handleGenerateGroceryList = async () => {
     if (!user) return;
 
@@ -688,20 +720,32 @@ export default function MealPrep() {
               <h3 className="text-lg font-bold text-slate-900 mb-4">My Lists</h3>
               <div className="space-y-2">
                 {groceryLists.map((list) => (
-                  <button
+                  <div
                     key={list.id}
-                    onClick={() => {
-                      setSelectedGroceryList(list.id);
-                      loadGroceryItems(list.id);
-                    }}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                    className={`group relative rounded-lg transition-colors ${
                       selectedGroceryList === list.id
-                        ? 'bg-green-100 text-green-900 font-semibold'
+                        ? 'bg-green-100 text-green-900'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    {list.list_name}
-                  </button>
+                    <button
+                      onClick={() => {
+                        setSelectedGroceryList(list.id);
+                        loadGroceryItems(list.id);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-lg ${
+                        selectedGroceryList === list.id ? 'font-semibold' : ''
+                      }`}
+                    >
+                      {list.list_name}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteGroceryList(list.id)}
+                      className="absolute top-1/2 right-2 -translate-y-1/2 p-1.5 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -739,7 +783,7 @@ export default function MealPrep() {
                     {selectedGroceryItems.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100"
+                        className="group flex items-center gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100"
                       >
                         <button
                           onClick={() => handleToggleGroceryItem(item.id, item.is_checked)}
@@ -763,6 +807,12 @@ export default function MealPrep() {
                             <span className="text-sm text-slate-500 ml-2">({item.amount})</span>
                           )}
                         </div>
+                        <button
+                          onClick={() => handleDeleteGroceryItem(item.id)}
+                          className="flex-shrink-0 p-1.5 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
                       </div>
                     ))}
                   </div>
