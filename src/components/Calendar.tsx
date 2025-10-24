@@ -49,6 +49,13 @@ export default function Calendar() {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
 
+      console.log('Loading events for:', {
+        year,
+        month,
+        firstDay: firstDay.toISOString().split('T')[0],
+        lastDay: lastDay.toISOString().split('T')[0]
+      });
+
       const allEvents: CalendarEvent[] = [];
 
       const [
@@ -260,6 +267,16 @@ export default function Calendar() {
           });
         });
       }
+
+      console.log('Total events loaded:', allEvents.length);
+      console.log('Events by category:', {
+        workout: allEvents.filter(e => e.category === 'workout').length,
+        journal: allEvents.filter(e => e.category === 'journal').length,
+        planner: allEvents.filter(e => e.category === 'planner').length,
+        meal: allEvents.filter(e => e.category === 'meal').length,
+        mood: allEvents.filter(e => e.category === 'mood').length,
+        goal: allEvents.filter(e => e.category === 'goal').length,
+      });
 
       setEvents(allEvents);
     } catch (error) {
