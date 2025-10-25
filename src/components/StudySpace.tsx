@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle, Send, Upload, FileText, Image as ImageIcon, X, Bot, Loader2, StickyNote, Palette } from 'lucide-react';
+import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle, Send, Upload, FileText, Image as ImageIcon, X, Bot, Loader2, StickyNote, Palette, Plus, Tag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -25,6 +25,14 @@ interface StudyMaterial {
   extractedText: string;
 }
 
+interface StudyNote {
+  id: string;
+  content: string;
+  category: string;
+  color: string;
+  position: number;
+}
+
 const ambientSounds = [
   { id: 'none', name: 'Silent', icon: VolumeX, description: 'Pure silence for maximum focus', url: null },
   { id: 'rain', name: 'Rain', icon: Cloud, description: 'Gentle rainfall to calm your mind', url: 'https://assets.mixkit.co/active_storage/sfx/2390/2390-preview.mp3' },
@@ -35,6 +43,28 @@ const ambientSounds = [
 ];
 
 const breakIntervals = [15, 25, 30, 45, 60, 90];
+
+const noteCategories = [
+  { name: 'Math', color: 'blue' },
+  { name: 'Science', color: 'green' },
+  { name: 'History', color: 'amber' },
+  { name: 'English', color: 'purple' },
+  { name: 'Languages', color: 'pink' },
+  { name: 'Computer Science', color: 'cyan' },
+  { name: 'Art', color: 'orange' },
+  { name: 'General', color: 'slate' },
+];
+
+const colorStyles: { [key: string]: { bg: string; text: string; border: string } } = {
+  blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300', border: 'border-blue-300 dark:border-blue-700' },
+  green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300', border: 'border-green-300 dark:border-green-700' },
+  amber: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300', border: 'border-amber-300 dark:border-amber-700' },
+  purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300', border: 'border-purple-300 dark:border-purple-700' },
+  pink: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-700 dark:text-pink-300', border: 'border-pink-300 dark:border-pink-700' },
+  cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-700 dark:text-cyan-300', border: 'border-cyan-300 dark:border-cyan-700' },
+  orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300', border: 'border-orange-300 dark:border-orange-700' },
+  slate: { bg: 'bg-slate-100 dark:bg-slate-700', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-300 dark:border-slate-600' },
+};
 
 export default function StudySpace() {
   const { user } = useAuth();
@@ -79,6 +109,12 @@ export default function StudySpace() {
   const [backgroundStyle, setBackgroundStyle] = useState('gradient-purple');
   const [showBgPicker, setShowBgPicker] = useState(false);
 
+  const [studyNotesList, setStudyNotesList] = useState<StudyNote[]>([]);
+  const [newNoteContent, setNewNoteContent] = useState('');
+  const [newNoteCategory, setNewNoteCategory] = useState('General');
+  const [showNewNoteForm, setShowNewNoteForm] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<string | null>(null);
+
   const backgroundStyles = [
     { id: 'gradient-purple', name: 'Purple Gradient', class: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900' },
     { id: 'gradient-ocean', name: 'Ocean Gradient', class: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 dark:from-slate-900 dark:via-blue-900 dark:to-teal-900' },
@@ -92,6 +128,7 @@ export default function StudySpace() {
     if (user) {
       loadStudyStats();
       loadStudyPreferences();
+      loadStudyNotes();
     }
   }, [user]);
 
@@ -131,6 +168,53 @@ export default function StudySpace() {
       return () => clearTimeout(debounce);
     }
   }, [quickNotes, backgroundStyle, user]);
+
+  const loadStudyNotes = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('study_notes')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('position', { ascending: true });
+
+    if (data) {
+      setStudyNotesList(data);
+    }
+  };
+
+  const createStudyNote = async () => {
+    if (!user || !newNoteContent.trim()) return;
+
+    const category = noteCategories.find(c => c.name === newNoteCategory);
+    const { data } = await supabase
+      .from('study_notes')
+      .insert({
+        user_id: user.id,
+        content: newNoteContent,
+        category: newNoteCategory,
+        color: category?.color || 'slate',
+        position: studyNotesList.length,
+      })
+      .select()
+      .single();
+
+    if (data) {
+      setStudyNotesList([...studyNotesList, data]);
+      setNewNoteContent('');
+      setNewNoteCategory('General');
+      setShowNewNoteForm(false);
+    }
+  };
+
+  const deleteStudyNote = async (noteId: string) => {
+    await supabase
+      .from('study_notes')
+      .delete()
+      .eq('id', noteId);
+
+    setStudyNotesList(studyNotesList.filter(n => n.id !== noteId));
+  };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -584,7 +668,7 @@ export default function StudySpace() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                 <StickyNote className="h-5 w-5 text-yellow-500" />
-                Quick Notes
+                Study Notes
               </h3>
               <button
                 onClick={() => setShowNotepad(false)}
@@ -593,15 +677,114 @@ export default function StudySpace() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <textarea
-              value={quickNotes}
-              onChange={(e) => setQuickNotes(e.target.value)}
-              placeholder="Jot down quick thoughts, reminders, or ideas while you study..."
-              className="w-full h-32 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-            />
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-              Auto-saves as you type
-            </p>
+
+            <div className="mb-4 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setFilterCategory(null)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  filterCategory === null
+                    ? 'bg-indigo-500 text-white'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                }`}
+              >
+                All
+              </button>
+              {noteCategories.map(cat => (
+                <button
+                  key={cat.name}
+                  onClick={() => setFilterCategory(cat.name)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    filterCategory === cat.name
+                      ? `${colorStyles[cat.color].bg} ${colorStyles[cat.color].text} ring-2 ${colorStyles[cat.color].border}`
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+              {studyNotesList
+                .filter(note => !filterCategory || note.category === filterCategory)
+                .map(note => {
+                  const styles = colorStyles[note.color] || colorStyles.slate;
+                  return (
+                    <div
+                      key={note.id}
+                      className={`p-4 rounded-xl border-2 ${styles.border} ${styles.bg} relative group`}
+                    >
+                      <button
+                        onClick={() => deleteStudyNote(note.id)}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-red-500"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                      <div className={`flex items-center gap-1.5 mb-2 ${styles.text}`}>
+                        <Tag className="h-3 w-3" />
+                        <span className="text-xs font-medium">{note.category}</span>
+                      </div>
+                      <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+                        {note.content}
+                      </p>
+                    </div>
+                  );
+                })}
+
+              {!showNewNoteForm && (
+                <button
+                  onClick={() => setShowNewNoteForm(true)}
+                  className="p-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all flex flex-col items-center justify-center gap-2 min-h-[120px]"
+                >
+                  <Plus className="h-6 w-6 text-slate-400" />
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Add Note</span>
+                </button>
+              )}
+
+              {showNewNoteForm && (
+                <div className="p-4 rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20">
+                  <select
+                    value={newNoteCategory}
+                    onChange={(e) => setNewNoteCategory(e.target.value)}
+                    className="w-full mb-2 px-2 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                  >
+                    {noteCategories.map(cat => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={newNoteContent}
+                    onChange={(e) => setNewNoteContent(e.target.value)}
+                    placeholder="Write your note..."
+                    className="w-full h-20 px-2 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none mb-2"
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={createStudyNote}
+                      className="flex-1 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm rounded-lg transition-colors"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowNewNoteForm(false);
+                        setNewNoteContent('');
+                      }}
+                      className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded-lg transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {studyNotesList.length === 0 && (
+              <p className="text-center text-slate-500 dark:text-slate-400 text-sm py-8">
+                No notes yet. Click "Add Note" to create your first study note with a subject tag!
+              </p>
+            )}
           </div>
         )}
 
