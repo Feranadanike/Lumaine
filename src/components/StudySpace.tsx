@@ -215,10 +215,16 @@ export default function StudySpace() {
 
     try {
       for (const file of Array.from(files)) {
+        setChatMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Processing "${file.name}"... This may take a moment for PDFs and images.`,
+          timestamp: new Date(),
+        }]);
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${currentSession.id}/${crypto.randomUUID()}.${fileExt}`;
 
-        const { error: uploadError, data: uploadData } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('study-materials')
           .upload(fileName, file);
 
@@ -228,15 +234,33 @@ export default function StudySpace() {
           .from('study-materials')
           .getPublicUrl(fileName);
 
-        let extractedText = '';
+        const { data: { session } } = await supabase.auth.getSession();
 
-        if (file.type === 'text/plain') {
-          extractedText = await file.text();
-        } else if (file.type.startsWith('image/')) {
-          extractedText = '[Image file - visual content available for AI analysis]';
-        } else if (file.type === 'application/pdf') {
-          extractedText = '[PDF file - content will be analyzed by AI]';
+        if (!session) {
+          throw new Error('No active session');
         }
+
+        const processResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-study-file`,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fileUrl: urlData.publicUrl,
+              fileType: file.type,
+              fileName: file.name,
+            }),
+          }
+        );
+
+        if (!processResponse.ok) {
+          throw new Error('Failed to process file');
+        }
+
+        const { extractedText } = await processResponse.json();
 
         const { data: materialData } = await supabase
           .from('study_materials')
@@ -260,9 +284,13 @@ export default function StudySpace() {
             extractedText: materialData.extracted_text || '',
           }]);
 
+          const contentPreview = extractedText.length > 100
+            ? extractedText.substring(0, 100) + '...'
+            : extractedText;
+
           setChatMessages(prev => [...prev, {
             role: 'assistant',
-            content: `Great! I've loaded "${file.name}". Feel free to ask me anything about it!`,
+            content: `Perfect! I've read "${file.name}" and I can see: "${contentPreview}"\n\nAsk me anything about it!`,
             timestamp: new Date(),
           }]);
         }
@@ -271,7 +299,7 @@ export default function StudySpace() {
       console.error('Error uploading file:', error);
       setChatMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, there was an error uploading your file. Please try again.',
+        content: 'Sorry, there was an error processing your file. Please try again.',
         timestamp: new Date(),
       }]);
     } finally {
