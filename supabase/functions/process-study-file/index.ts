@@ -7,25 +7,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
 };
 
-async function extractTextFromPDF(fileUrl: string): Promise<string> {
+async function extractTextFromPDF(fileUrl: string, openaiApiKey: string): Promise<string> {
   try {
-    const response = await fetch(fileUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const decoder = new TextDecoder('utf-8', { fatal: false });
-    let text = decoder.decode(uint8Array);
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Extract ALL text content from this PDF document. Preserve the structure, headings, and formatting as much as possible. Include all important information such as:\n- Main topics and subtopics\n- Key concepts and definitions\n- Formulas, equations, or code snippets\n- Important facts, dates, or figures\n- Any tables or structured data\n- Diagrams or charts (describe them)\n\nBe thorough and detailed. This will be used for study purposes.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: fileUrl,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 4000,
+      }),
+    });
 
-    text = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ');
-    text = text.replace(/\s+/g, ' ').trim();
-
-    if (text.length < 50) {
-      return '[PDF content - binary format detected. The AI will do its best to help based on your questions about this file.]';
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('OpenAI API error:', errorData);
+      throw new Error('OpenAI API failed');
     }
 
-    return text.substring(0, 50000);
+    const data = await response.json();
+    return data.choices[0].message.content;
   } catch (error) {
     console.error('PDF extraction error:', error);
-    return '[PDF file - unable to extract text automatically. Please describe what you need help with.]';
+    return '[PDF file - unable to extract text automatically. Please describe what you need help with or ask specific questions about this document.]';
   }
 }
 
@@ -120,7 +144,12 @@ Deno.serve(async (req: Request) => {
       extractedText = await response.text();
       extractedText = extractedText.substring(0, 50000);
     } else if (fileType === 'application/pdf') {
-      extractedText = await extractTextFromPDF(fileUrl);
+      const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+      if (!openaiApiKey) {
+        extractedText = '[PDF file - AI vision not configured. Please describe the content.]';
+      } else {
+        extractedText = await extractTextFromPDF(fileUrl, openaiApiKey);
+      }
     } else if (fileType.startsWith('image/')) {
       const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
       if (!openaiApiKey) {
