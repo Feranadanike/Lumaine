@@ -184,16 +184,19 @@ export default function StudySpace() {
   };
 
   const createStudyNote = async () => {
-    if (!user || !newNoteContent.trim()) return;
+    if (!user || !newNoteContent.trim() || !newNoteCategory.trim()) return;
 
-    const category = noteCategories.find(c => c.name === newNoteCategory);
+    const predefinedCategory = noteCategories.find(c => c.name.toLowerCase() === newNoteCategory.toLowerCase());
+    const colors = ['blue', 'green', 'amber', 'purple', 'pink', 'cyan', 'orange'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
     const { data } = await supabase
       .from('study_notes')
       .insert({
         user_id: user.id,
         content: newNoteContent,
-        category: newNoteCategory,
-        color: category?.color || 'slate',
+        category: newNoteCategory.trim(),
+        color: predefinedCategory?.color || randomColor,
         position: studyNotesList.length,
       })
       .select()
@@ -202,7 +205,7 @@ export default function StudySpace() {
     if (data) {
       setStudyNotesList([...studyNotesList, data]);
       setNewNoteContent('');
-      setNewNoteCategory('General');
+      setNewNoteCategory('');
       setShowNewNoteForm(false);
     }
   };
@@ -678,31 +681,37 @@ export default function StudySpace() {
               </button>
             </div>
 
-            <div className="mb-4 flex items-center gap-2 flex-wrap">
-              <button
-                onClick={() => setFilterCategory(null)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  filterCategory === null
-                    ? 'bg-indigo-500 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                }`}
-              >
-                All
-              </button>
-              {noteCategories.map(cat => (
+            {studyNotesList.length > 0 && (
+              <div className="mb-4 flex items-center gap-2 flex-wrap">
                 <button
-                  key={cat.name}
-                  onClick={() => setFilterCategory(cat.name)}
+                  onClick={() => setFilterCategory(null)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    filterCategory === cat.name
-                      ? `${colorStyles[cat.color].bg} ${colorStyles[cat.color].text} ring-2 ${colorStyles[cat.color].border}`
+                    filterCategory === null
+                      ? 'bg-indigo-500 text-white'
                       : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                   }`}
                 >
-                  {cat.name}
+                  All
                 </button>
-              ))}
-            </div>
+                {Array.from(new Set(studyNotesList.map(note => note.category))).map(category => {
+                  const note = studyNotesList.find(n => n.category === category);
+                  const styles = note ? colorStyles[note.color] || colorStyles.slate : colorStyles.slate;
+                  return (
+                    <button
+                      key={category}
+                      onClick={() => setFilterCategory(category)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        filterCategory === category
+                          ? `${styles.bg} ${styles.text} ring-2 ${styles.border}`
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               {studyNotesList
@@ -743,26 +752,41 @@ export default function StudySpace() {
 
               {showNewNoteForm && (
                 <div className="p-4 rounded-xl border-2 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20">
-                  <select
-                    value={newNoteCategory}
-                    onChange={(e) => setNewNoteCategory(e.target.value)}
-                    className="w-full mb-2 px-2 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
-                  >
+                  <div className="mb-2">
+                    <label className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">Subject</label>
+                    <input
+                      type="text"
+                      value={newNoteCategory}
+                      onChange={(e) => setNewNoteCategory(e.target.value)}
+                      placeholder="Type your subject (e.g., Biology, Physics...)"
+                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div className="mb-2 flex flex-wrap gap-1">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 w-full mb-1">Quick select:</span>
                     {noteCategories.map(cat => (
-                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                      <button
+                        key={cat.name}
+                        onClick={() => setNewNoteCategory(cat.name)}
+                        className={`px-2 py-0.5 rounded text-xs transition-all ${
+                          colorStyles[cat.color].bg
+                        } ${colorStyles[cat.color].text} hover:opacity-80`}
+                      >
+                        {cat.name}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                   <textarea
                     value={newNoteContent}
                     onChange={(e) => setNewNoteContent(e.target.value)}
                     placeholder="Write your note..."
                     className="w-full h-20 px-2 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none mb-2"
-                    autoFocus
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={createStudyNote}
-                      className="flex-1 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm rounded-lg transition-colors"
+                      disabled={!newNoteCategory.trim() || !newNoteContent.trim()}
+                      className="flex-1 px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Save
                     </button>
@@ -770,6 +794,7 @@ export default function StudySpace() {
                       onClick={() => {
                         setShowNewNoteForm(false);
                         setNewNoteContent('');
+                        setNewNoteCategory('');
                       }}
                       className="px-3 py-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 text-sm rounded-lg transition-colors"
                     >
