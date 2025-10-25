@@ -55,11 +55,23 @@ export default function AICoach() {
         .eq('status', 'active')
         .limit(5);
 
+      const { data: studySessions } = await supabase
+        .from('study_sessions')
+        .select('*, study_logs(*)')
+        .eq('user_id', user?.id)
+        .eq('completed', true)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const totalStudyTime = studySessions?.reduce((sum, s) => sum + s.duration_minutes, 0) || 0;
+
       setUserContext({
         level: profile?.level || 1,
         streak: profile?.current_streak || 0,
         totalXP: profile?.total_xp || 0,
         recentGoals: goals || [],
+        studySessions: studySessions || [],
+        totalStudyTime,
       });
     } catch (error) {
       console.error('Error loading user context:', error);

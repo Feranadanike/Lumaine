@@ -20,6 +20,8 @@ interface ChatRequest {
     totalXP?: number;
     recentGoals?: any[];
     recentActivity?: any;
+    studySessions?: any[];
+    totalStudyTime?: number;
   };
 }
 
@@ -59,12 +61,15 @@ Deno.serve(async (req: Request) => {
 - Goal setting and achievement
 - Habit building and consistency
 - Savings and financial wellness
+- Study habits and learning optimization
 
 User Context:
 ${userContext?.level ? `- Current Level: ${userContext.level}` : ''}
 ${userContext?.streak ? `- Current Streak: ${userContext.streak} days` : ''}
 ${userContext?.totalXP ? `- Total XP: ${userContext.totalXP}` : ''}
 ${userContext?.recentGoals?.length ? `- Active Goals: ${userContext.recentGoals.length}` : ''}
+${userContext?.totalStudyTime ? `- Total Study Time: ${userContext.totalStudyTime} minutes` : ''}
+${userContext?.studySessions?.length ? `- Recent Study Sessions: ${userContext.studySessions.length}` : ''}
 
 Your tone should be:
 - Encouraging and positive

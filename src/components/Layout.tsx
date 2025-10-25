@@ -32,7 +32,8 @@ import {
   Search,
   Moon,
   Sun,
-  Zap
+  Zap,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -80,6 +81,7 @@ const navigationCategories = [
   {
     name: 'Personal',
     items: [
+      { id: 'studyspace', name: 'Study Space', icon: Brain },
       { id: 'notes', name: 'Quick Notes', icon: FileText },
       { id: 'memories', name: 'Memories', icon: Camera },
       { id: 'books', name: 'Reading List', icon: Book },
