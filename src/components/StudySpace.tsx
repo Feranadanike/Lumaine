@@ -12,12 +12,12 @@ interface StudySession {
 }
 
 const ambientSounds = [
-  { id: 'none', name: 'Silent', icon: VolumeX, description: 'Pure silence for maximum focus' },
-  { id: 'rain', name: 'Rain', icon: Cloud, description: 'Gentle rainfall to calm your mind' },
-  { id: 'waves', name: 'Ocean Waves', icon: Waves, description: 'Peaceful ocean sounds' },
-  { id: 'cafe', name: 'Coffee Shop', icon: Coffee, description: 'Ambient cafe atmosphere' },
-  { id: 'wind', name: 'Wind Chimes', icon: Wind, description: 'Soft wind and chimes' },
-  { id: 'lofi', name: 'Lo-Fi Beats', icon: Music, description: 'Relaxing instrumental music' },
+  { id: 'none', name: 'Silent', icon: VolumeX, description: 'Pure silence for maximum focus', url: null },
+  { id: 'rain', name: 'Rain', icon: Cloud, description: 'Gentle rainfall to calm your mind', url: 'https://assets.mixkit.co/active_storage/sfx/2390/2390-preview.mp3' },
+  { id: 'waves', name: 'Ocean Waves', icon: Waves, description: 'Peaceful ocean sounds', url: 'https://assets.mixkit.co/active_storage/sfx/2393/2393-preview.mp3' },
+  { id: 'cafe', name: 'Coffee Shop', icon: Coffee, description: 'Ambient cafe atmosphere', url: 'https://assets.mixkit.co/active_storage/sfx/2458/2458-preview.mp3' },
+  { id: 'wind', name: 'Wind Chimes', icon: Wind, description: 'Soft wind and chimes', url: 'https://assets.mixkit.co/active_storage/sfx/2392/2392-preview.mp3' },
+  { id: 'lofi', name: 'Lo-Fi Beats', icon: Music, description: 'Relaxing instrumental music', url: 'https://assets.mixkit.co/active_storage/sfx/2420/2420-preview.mp3' },
 ];
 
 const breakIntervals = [15, 25, 30, 45, 60, 90];
@@ -47,12 +47,61 @@ export default function StudySpace() {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<Date | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [volume, setVolume] = useState(0.5);
 
   useEffect(() => {
     if (user) {
       loadStudyStats();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  useEffect(() => {
+    const sound = ambientSounds.find(s => s.id === selectedSound);
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    if (sound?.url && isTimerActive && !isPaused) {
+      if (audioRef.current) {
+        audioRef.current.src = sound.url;
+        audioRef.current.loop = true;
+        audioRef.current.volume = volume;
+        audioRef.current.play().catch(err => console.error('Audio play error:', err));
+      }
+    }
+  }, [selectedSound]);
+
+  useEffect(() => {
+    const sound = ambientSounds.find(s => s.id === selectedSound);
+
+    if (isTimerActive && !isPaused && sound?.url) {
+      if (audioRef.current) {
+        if (audioRef.current.src !== sound.url) {
+          audioRef.current.src = sound.url;
+          audioRef.current.loop = true;
+          audioRef.current.volume = volume;
+        }
+        audioRef.current.play().catch(err => console.error('Audio play error:', err));
+      }
+    } else if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    if (!isTimerActive && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [isTimerActive, isPaused, selectedSound, volume]);
 
   const loadStudyStats = async () => {
     if (!user) return;
@@ -383,9 +432,27 @@ export default function StudySpace() {
                 </button>
               </div>
 
-              <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
-                <SelectedSoundIcon className="h-5 w-5" />
-                <span className="text-sm">{ambientSounds.find(s => s.id === selectedSound)?.name}</span>
+              <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <SelectedSoundIcon className="h-5 w-5" />
+                  <span className="text-sm">{ambientSounds.find(s => s.id === selectedSound)?.name}</span>
+                </div>
+
+                {selectedSound !== 'none' && (
+                  <div className="flex items-center gap-3 w-64">
+                    <VolumeX className="h-4 w-4 text-slate-400" />
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                    <Volume2 className="h-4 w-4 text-slate-400" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -473,6 +540,8 @@ export default function StudySpace() {
           </div>
         )}
       </div>
+
+      <audio ref={audioRef} />
     </div>
   );
 }
