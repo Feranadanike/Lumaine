@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle, Send, Upload, FileText, Image as ImageIcon, X, Bot, Loader2 } from 'lucide-react';
+import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle, Send, Upload, FileText, Image as ImageIcon, X, Bot, Loader2, StickyNote, Palette } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -74,11 +74,63 @@ export default function StudySpace() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [quickNotes, setQuickNotes] = useState('');
+  const [showNotepad, setShowNotepad] = useState(false);
+  const [backgroundStyle, setBackgroundStyle] = useState('gradient-purple');
+  const [showBgPicker, setShowBgPicker] = useState(false);
+
+  const backgroundStyles = [
+    { id: 'gradient-purple', name: 'Purple Gradient', class: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900' },
+    { id: 'gradient-ocean', name: 'Ocean Gradient', class: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-teal-50 dark:from-slate-900 dark:via-blue-900 dark:to-teal-900' },
+    { id: 'gradient-sunset', name: 'Sunset Gradient', class: 'bg-gradient-to-br from-orange-50 via-pink-50 to-red-50 dark:from-slate-900 dark:via-orange-900 dark:to-red-900' },
+    { id: 'gradient-forest', name: 'Forest Gradient', class: 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-slate-900 dark:via-green-900 dark:to-emerald-900' },
+    { id: 'gradient-minimal', name: 'Minimal', class: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800' },
+    { id: 'solid-dark', name: 'Dark Mode', class: 'bg-slate-900' },
+  ];
+
   useEffect(() => {
     if (user) {
       loadStudyStats();
+      loadStudyPreferences();
     }
   }, [user]);
+
+  const loadStudyPreferences = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('study_preferences')
+      .select('quick_notes, background_style')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (data) {
+      setQuickNotes(data.quick_notes || '');
+      setBackgroundStyle(data.background_style || 'gradient-purple');
+    }
+  };
+
+  const saveStudyPreferences = async () => {
+    if (!user) return;
+
+    await supabase
+      .from('study_preferences')
+      .upsert({
+        user_id: user.id,
+        quick_notes: quickNotes,
+        background_style: backgroundStyle,
+      });
+  };
+
+  useEffect(() => {
+    if (user && (quickNotes || backgroundStyle !== 'gradient-purple')) {
+      const debounce = setTimeout(() => {
+        saveStudyPreferences();
+      }, 1000);
+
+      return () => clearTimeout(debounce);
+    }
+  }, [quickNotes, backgroundStyle, user]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -493,19 +545,101 @@ export default function StudySpace() {
   };
 
   const SelectedSoundIcon = ambientSounds.find(s => s.id === selectedSound)?.icon || Volume2;
+  const currentBgStyle = backgroundStyles.find(bg => bg.id === backgroundStyle)?.class || backgroundStyles[0].class;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 p-6">
+    <div className={`min-h-screen ${currentBgStyle} p-6 transition-all duration-500`}>
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
-            <Brain className="h-8 w-8 text-indigo-500" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg">
+              <Brain className="h-8 w-8 text-indigo-500" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Study Space</h1>
+              <p className="text-slate-600 dark:text-slate-400">Your peaceful corner for focused learning</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Study Space</h1>
-            <p className="text-slate-600 dark:text-slate-400">Your peaceful corner for focused learning</p>
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowNotepad(!showNotepad)}
+              className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all text-indigo-500 hover:text-indigo-600"
+              title="Quick Notes"
+            >
+              <StickyNote className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setShowBgPicker(!showBgPicker)}
+              className="p-3 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-all text-indigo-500 hover:text-indigo-600"
+              title="Change Background"
+            >
+              <Palette className="h-5 w-5" />
+            </button>
           </div>
         </div>
+
+        {showNotepad && (
+          <div className="mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <StickyNote className="h-5 w-5 text-yellow-500" />
+                Quick Notes
+              </h3>
+              <button
+                onClick={() => setShowNotepad(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <textarea
+              value={quickNotes}
+              onChange={(e) => setQuickNotes(e.target.value)}
+              placeholder="Jot down quick thoughts, reminders, or ideas while you study..."
+              className="w-full h-32 px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            />
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              Auto-saves as you type
+            </p>
+          </div>
+        )}
+
+        {showBgPicker && (
+          <div className="mb-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Palette className="h-5 w-5 text-indigo-500" />
+                Background Style
+              </h3>
+              <button
+                onClick={() => setShowBgPicker(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {backgroundStyles.map((bg) => (
+                <button
+                  key={bg.id}
+                  onClick={() => {
+                    setBackgroundStyle(bg.id);
+                    setShowBgPicker(false);
+                  }}
+                  className={`p-4 rounded-xl text-left transition-all ${
+                    backgroundStyle === bg.id
+                      ? 'ring-2 ring-indigo-500 ring-offset-2 dark:ring-offset-slate-800'
+                      : 'hover:ring-2 hover:ring-slate-300 dark:hover:ring-slate-600'
+                  }`}
+                >
+                  <div className={`h-16 rounded-lg mb-2 ${bg.class}`}></div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">{bg.name}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {!isTimerActive && !showStudyLog && (
           <div className="space-y-6">
