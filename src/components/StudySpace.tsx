@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle } from 'lucide-react';
+import { Brain, Play, Pause, Square, Volume2, VolumeX, Coffee, Cloud, Waves, Wind, Music, Timer, BookOpen, Sparkles, AlertCircle, Send, Upload, FileText, Image as ImageIcon, X, Bot, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,6 +9,20 @@ interface StudySession {
   duration_minutes: number;
   break_interval_minutes: number;
   sound_choice: string;
+}
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+interface StudyMaterial {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileUrl: string;
+  extractedText: string;
 }
 
 const ambientSounds = [
@@ -51,11 +65,24 @@ export default function StudySpace() {
 
   const [volume, setVolume] = useState(0.5);
 
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+  const [studyMaterials, setStudyMaterials] = useState<StudyMaterial[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (user) {
       loadStudyStats();
     }
   }, [user]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -148,8 +175,178 @@ export default function StudySpace() {
       setTimeRemaining(studyDuration * 60);
       setIsTimerActive(true);
       setIsPaused(false);
+      setShowChat(true);
       startTimeRef.current = new Date();
+
+      setChatMessages([{
+        role: 'assistant',
+        content: "Hi! I'm your AI study buddy. Upload your study materials and I'll help you learn! You can ask me questions, request summaries, or quiz yourself on the content.",
+        timestamp: new Date(),
+      }]);
+
+      loadStudyMaterials(data.id);
     }
+  };
+
+  const loadStudyMaterials = async (sessionId: string) => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('study_materials')
+      .select('*')
+      .eq('session_id', sessionId);
+
+    if (data) {
+      setStudyMaterials(data.map(m => ({
+        id: m.id,
+        fileName: m.file_name,
+        fileType: m.file_type,
+        fileUrl: m.file_url,
+        extractedText: m.extracted_text || '',
+      })));
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || !user || !currentSession?.id) return;
+
+    setIsUploading(true);
+
+    try {
+      for (const file of Array.from(files)) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}/${currentSession.id}/${crypto.randomUUID()}.${fileExt}`;
+
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('study-materials')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from('study-materials')
+          .getPublicUrl(fileName);
+
+        let extractedText = '';
+
+        if (file.type === 'text/plain') {
+          extractedText = await file.text();
+        } else if (file.type.startsWith('image/')) {
+          extractedText = '[Image file - visual content available for AI analysis]';
+        } else if (file.type === 'application/pdf') {
+          extractedText = '[PDF file - content will be analyzed by AI]';
+        }
+
+        const { data: materialData } = await supabase
+          .from('study_materials')
+          .insert({
+            user_id: user.id,
+            session_id: currentSession.id,
+            file_name: file.name,
+            file_type: file.type,
+            file_url: urlData.publicUrl,
+            extracted_text: extractedText,
+          })
+          .select()
+          .single();
+
+        if (materialData) {
+          setStudyMaterials(prev => [...prev, {
+            id: materialData.id,
+            fileName: materialData.file_name,
+            fileType: materialData.file_type,
+            fileUrl: materialData.file_url,
+            extractedText: materialData.extracted_text || '',
+          }]);
+
+          setChatMessages(prev => [...prev, {
+            role: 'assistant',
+            content: `Great! I've loaded "${file.name}". Feel free to ask me anything about it!`,
+            timestamp: new Date(),
+          }]);
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, there was an error uploading your file. Please try again.',
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!chatInput.trim() || isChatLoading || !currentSession?.id) return;
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: chatInput,
+      timestamp: new Date(),
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/study-assistant`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId: currentSession.id,
+            message: chatInput,
+            conversationHistory: chatMessages.slice(-10).map(m => ({
+              role: m.role,
+              content: m.content
+            })),
+            studyMaterials: studyMaterials.map(m => ({
+              fileName: m.fileName,
+              extractedText: m.extractedText,
+            })),
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to get response');
+
+      const data = await response.json();
+
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.response,
+        timestamp: new Date(),
+      }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setChatMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const removeMaterial = async (materialId: string) => {
+    await supabase
+      .from('study_materials')
+      .delete()
+      .eq('id', materialId);
+
+    setStudyMaterials(prev => prev.filter(m => m.id !== materialId));
   };
 
   const togglePause = () => {
@@ -172,6 +369,9 @@ export default function StudySpace() {
     setTimeRemaining(0);
     setCurrentSession(null);
     setShowBreak(false);
+    setShowChat(false);
+    setChatMessages([]);
+    setStudyMaterials([]);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
@@ -391,8 +591,9 @@ export default function StudySpace() {
         )}
 
         {isTimerActive && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-12">
-            <div className="text-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-12">
+              <div className="text-center">
               {showBreak ? (
                 <>
                   <div className="mb-6">
@@ -453,6 +654,120 @@ export default function StudySpace() {
                     <Volume2 className="h-4 w-4 text-slate-400" />
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 flex flex-col h-[600px]">
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-6 w-6 text-indigo-500" />
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">AI Study Buddy</h3>
+                </div>
+              </div>
+
+              {studyMaterials.length > 0 && (
+                <div className="mb-4">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Loaded Materials:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {studyMaterials.map(material => (
+                      <div
+                        key={material.id}
+                        className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded-lg text-xs"
+                      >
+                        {material.fileType.startsWith('image/') ? (
+                          <ImageIcon className="h-3 w-3 text-indigo-500" />
+                        ) : (
+                          <FileText className="h-3 w-3 text-indigo-500" />
+                        )}
+                        <span className="text-slate-700 dark:text-slate-300">{material.fileName}</span>
+                        <button
+                          onClick={() => removeMaterial(material.id)}
+                          className="text-slate-400 hover:text-red-500 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto mb-4 space-y-3">
+                {chatMessages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {msg.role === 'assistant' && (
+                      <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-indigo-500" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] p-3 rounded-xl ${
+                        msg.role === 'user'
+                          ? 'bg-indigo-500 text-white'
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white'
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  </div>
+                ))}
+                {isChatLoading && (
+                  <div className="flex gap-3 justify-start">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-xl">
+                      <Loader2 className="h-4 w-4 text-indigo-500 animate-spin" />
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".pdf,.txt,.png,.jpg,.jpeg"
+                    className="hidden"
+                    multiple
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="p-3 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="h-5 w-5 text-slate-600 dark:text-slate-400 animate-spin" />
+                    ) : (
+                      <Upload className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+                    )}
+                  </button>
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Ask me anything about your study materials..."
+                    className="flex-1 p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isChatLoading || !chatInput.trim()}
+                    className="p-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    <Send className="h-5 w-5" />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+                  Upload PDFs, images, or text files to study together
+                </p>
               </div>
             </div>
           </div>
