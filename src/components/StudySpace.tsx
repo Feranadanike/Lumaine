@@ -111,7 +111,7 @@ export default function StudySpace() {
 
   const [studyNotesList, setStudyNotesList] = useState<StudyNote[]>([]);
   const [newNoteContent, setNewNoteContent] = useState('');
-  const [newNoteCategory, setNewNoteCategory] = useState('General');
+  const [newNoteCategory, setNewNoteCategory] = useState('');
   const [showNewNoteForm, setShowNewNoteForm] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string | null>(null);
 
