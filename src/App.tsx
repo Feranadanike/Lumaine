@@ -30,6 +30,7 @@ import Relationships from './components/Relationships';
 import Routines from './components/Routines';
 import SmartInsights from './components/SmartInsights';
 import StudySpace from './components/StudySpace';
+import Privacy from './components/Privacy';
 
 function AppContent() {
   const { user, loading } = useAuth();
@@ -108,6 +109,7 @@ function AppContent() {
       {currentView === 'relationships' && <Relationships />}
       {currentView === 'smartinsights' && <SmartInsights />}
       {currentView === 'studyspace' && <StudySpace />}
+      {currentView === 'privacy' && <Privacy />}
       </Layout>
     </>
   );

@@ -33,7 +33,8 @@ import {
   Moon,
   Sun,
   Zap,
-  Brain
+  Brain,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -101,6 +102,7 @@ const navigationCategories = [
     items: [
       { id: 'coach', name: 'LumiBud Coach', icon: Bot },
       { id: 'profile', name: 'Profile', icon: User },
+      { id: 'privacy', name: 'Privacy & Data', icon: ShieldCheck },
     ]
   },
 ];
