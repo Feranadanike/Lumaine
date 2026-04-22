@@ -1,0 +1,23 @@
+# Lumibud (Early Version - Lumaine)
+
+## Overview
+This repository contains an early version of Lumibud, a productivity and lifestyle web application designed to help users manage study planning, tasks, and daily routines.
+
+This project represents the initial development phase, where core features and architecture were designed and tested.
+
+## Features
+- Task and study planning
+- Basic UI structure
+- Early data handling 
+
+## Tech Stack
+- JavaScript
+- HTML/CSS
+
+## Development Context
+This version was later iterated into an improved version of Lumibud with enhanced features, usability, and performance.
+
+## Future Improvements
+- Improved UI/UX
+- Authentication system
+- Scalable backend architecture
